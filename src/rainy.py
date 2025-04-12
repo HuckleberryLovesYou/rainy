@@ -80,6 +80,8 @@ def get_ascii_art_and_weather_name(weather_code: int) -> tuple[list[str], str]:
 
     :param weather_code: The code of the current weather returned by the API (a WMO Weather interpretation code (WW) 1-99. Further Information here: https://open-meteo.com/en/docs).
     :type weather_code: int
+
+    :returns: tuple: It contains a list of the ascii art, where on each index there's a single line of the ascii art and the friendly name of the current weather, since get_weather() returns the weather code.
     """
     if weather_code == 0:
         return [
@@ -144,6 +146,28 @@ def get_ascii_art_and_weather_name(weather_code: int) -> tuple[list[str], str]:
 
 
 def print_output(ascii_art: list[str], city: str, weather: str, temperature_str: str, wind_speed_str: str, sunrise: str, sunset: str, current_date: str, current_time: str) -> None:
+    """
+
+    :param ascii_art: Takes in a list of strings containing a single line of the ascii art per index.
+    :type ascii_art: list
+    :param city: Takes in the name of the city requested.
+    :type city: str
+    :param weather: Takes in the current weather.
+    :type weather: str
+    :param temperature_str: Takes in the current temperature already calculated with unit of measurement
+    :type temperature_str: str
+    :param wind_speed_str: Takes in the current wind speed already calculated with unit of measurement
+    :type wind_speed_str: str
+    :param sunrise: Takes in the time of sunrise.
+    :type sunrise: str
+    :param sunset: Takes in the time of sunset.
+    :type sunset: str
+    :param current_date: Takes in the current date. Format depends on the configuration and is already passed formated.
+    :type current_date: str
+    :param current_time: Takes in the current time. Format depends on the configuration and is already passed formated.
+    :type current_time: str
+    :return: None
+    """
     values: list[str] = []
     if show_city:
         values.append(city)
