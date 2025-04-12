@@ -1,5 +1,5 @@
 # Rainy 🌦️
-Neofetch-like, minimalistic, and customizable weather-fetching cli tool.
+Neofetch-like, minimalistic, and customizable weather-fetching cli tool for your current location.
 
 <img src="assets/preview.png">
 
@@ -34,7 +34,7 @@ To uninstall rainy, you can run `make uninstall`.
 
 ## Configuration
 * You can edit the config at the **top** of `/usr/local/bin/rainy` and set unit of measurements, date formats.
-* You can also set to show city name or/and the current date if you want to.
+* You can also set to show city name or/and the current date and time if you want to.
 #### temperature_unit
 Here you can specify what unit of measurement you would like to use for the temperature.
 You can choose between °C (Celsius), °F (Fahrenheit) and °K (Kelvin).
@@ -69,11 +69,12 @@ Currently, there is no way of changing the format of the time.
 Default: True
 
 ## Update
-What if there's an update? You can just update your local git clone and sudo make again (you can also edit the config of the git clone you you don't have to set it every time you sudo make)
+What if there's an update?
+You can just update your local repository with running `git pull` in the cloned folder. After that run `sudo make install`.
 
 ---
 
 ### Fork
 
-This was a fork of a smaller project by [Rainy by loefey](https://github.com/loefey/rainy). 
+This is a fork of a smaller project by [Rainy by loefey](https://github.com/loefey/rainy). 
 Upstream is unmaintained. He has rewritten and upgraded it in Rust, creating [Thundery](https://github.com/loefey/thundery).
