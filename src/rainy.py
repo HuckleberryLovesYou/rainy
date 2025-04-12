@@ -259,6 +259,12 @@ def main() -> None:
 
     if time_format == 12:
         current_time = datetime.datetime.now().strftime("%I:%M:%S %p")
+
+        sunrise_time_obj = datetime.datetime.strptime(sunrise, "%H:%M")
+        sunrise = sunrise_time_obj.strftime("%I:%M %p")
+        sunset_time_obj = datetime.datetime.strptime(sunset, "%H:%M")
+        sunset = sunset_time_obj.strftime("%I:%M %p")
+
     elif time_format == 24:
         current_time = datetime.datetime.now().strftime("%H:%M:%S")
     else:
