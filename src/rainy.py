@@ -14,6 +14,7 @@ show_sunset = True  # Show the sunset, True or False
 show_date = True  # Shows the current date. True or False
 date_format = "DD.MM.YYYY"  # Specify the date format. Following formats are valid: MM/DD/YYYY, DD/MM/YYYY, YYYY/MM/DD, YYYY-MM-DD, DD.MM.YYYY
 show_time = True  # Shows the current time. True or False
+time_format = 24  # Specify the time format. Following formats are valid: 12, 24
 
 ###########################################################################################################################
 
@@ -256,7 +257,13 @@ def main() -> None:
     else:
         current_date = None
 
-    current_time = datetime.datetime.now().strftime("%H:%M:%S")
+    if time_format == 12:
+        current_time = datetime.datetime.now().strftime("%I:%M:%S %p")
+    elif time_format == 24:
+        current_time = datetime.datetime.now().strftime("%H:%M:%S")
+    else:
+        print("Invalid time format. Please use supported date format. Using default.")
+
     ascii_art, weather = get_ascii_art_and_weather_name(weather_code)
     print_output(ascii_art, city, weather, temperature_str, wind_speed_str, sunrise, sunset, current_date, current_time)
 
