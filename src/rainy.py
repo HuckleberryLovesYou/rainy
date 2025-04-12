@@ -147,6 +147,10 @@ def get_ascii_art_and_weather_name(weather_code: int) -> tuple[list[str], str]:
 
 def print_output(ascii_art: list[str], city: str, weather: str, temperature_str: str, wind_speed_str: str, sunrise: str, sunset: str, current_date: str, current_time: str) -> None:
     """
+    Prints the output of rainy to the terminal. It can take any amount of parameters. If no parameter is passed, the output will only be the ascii art of the current weather.
+    If the amount of lines needed to display the passed parameters, it will expand the ascii art with blank lines in the same amount of characters and add the value behind it.
+    
+    It will not return anything in any case.
 
     :param ascii_art: Takes in a list of strings containing a single line of the ascii art per index.
     :type ascii_art: list
@@ -186,8 +190,6 @@ def print_output(ascii_art: list[str], city: str, weather: str, temperature_str:
     if show_time:
         values.append(current_time)
 
-    print(len(ascii_art))
-    print(len(values))
     len_diff = len(values) - len(ascii_art)
     if len_diff > 0:
         for _ in range(len_diff):
