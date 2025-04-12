@@ -64,7 +64,10 @@ def get_weather(latitude: float, longitude: float, wind_speed_unit: str, tempera
         f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&daily=sunrise,sunset&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto&forecast_days=1&wind_speed_unit={wind_speed_unit}&temperature_unit={temperature_unit}"
     )
     if not api_call.status_code == 200:
-        print("Error during API Call. Check your internet connection.")
+        if api_call.status_code == 400:
+            print("Error during API Call. URL parameter is not correctly specified")
+        else:
+            print("Error during API Call. Check your internet connection.")
     api_response = json.loads(api_call.text)
     weather_code: int = int(api_response["current"]["weather_code"])
     sunrise: str = "".join(api_response["daily"]["sunrise"])[-5:]
