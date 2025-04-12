@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
 
 # Config
-
 ###########################################################################################################################
 
-
 temperature_unit = "°C"  # Specify the unit of measurement for the temperature. Following units are valid: °C, °F, °K
-wind_speed_unit = "km/h" # Specify the unit of measurement for the speed of the wind. Following units are valid: mph, km/h, m/s, Knots
+wind_speed_unit = "km/h"  # Specify the unit of measurement for the speed of the wind. Following units are valid: mph, km/h, m/s, Knots
 show_city = True  # Show the city name, True or False
-show_weather = True # Shows the word-representation of the weather shown in the ascii art, True or False
-show_temperature = True # Show the temperature, True or False
-show_wind_speed = True # Show the wind speed, True or False
-show_sunrise = True # Show the sunrise, True or False
-show_sunset = True # Show the sunset, True or False
-show_date = True # Shows the current date. True or False
-date_format = "DD.MM.YYYY" # Specify the date format. Following formats are valid: MM/DD/YYYY, DD/MM/YYYY, YYYY/MM/DD, YYYY-MM-DD, DD.MM.YYYY
-show_time = True # Shows the current time. True or False
+show_weather = True  # Shows the word-representation of the weather shown in the ascii art, True or False
+show_temperature = True  # Show the temperature, True or False
+show_wind_speed = True  # Show the wind speed, True or False
+show_sunrise = True  # Show the sunrise, True or False
+show_sunset = True  # Show the sunset, True or False
+show_date = True  # Shows the current date. True or False
+date_format = "DD.MM.YYYY"  # Specify the date format. Following formats are valid: MM/DD/YYYY, DD/MM/YYYY, YYYY/MM/DD, YYYY-MM-DD, DD.MM.YYYY
+show_time = True  # Shows the current time. True or False
 
 ###########################################################################################################################
 
@@ -23,11 +21,15 @@ import requests
 import datetime
 import json
 
-#def get_time_offset() -> int:
-#    return int(str(datetime.datetime.now(datetime.timezone.utc).astimezone().utcoffset()).split(":")[0])
-
 def get_location() -> tuple[float, float, str]:
-    ipinfo_api_uri = "https://ipinfo.io/json" # gets ipinfo for current ip
+    """Gets the current location of the user based on his public IP Address using the ipinfo.io API.
+    If the User uses a VPN or Proxy, the location got, will be the location of the proxy or the VPN exit node.
+
+    It checks if the API Call returned code 200. The latitude and longitude are rounded to 2 decimal places.
+
+    :returns: tuple: It contains the latitude on index 0, longitude on index 1 and the city on index 2
+    """
+    ipinfo_api_uri = "https://ipinfo.io/json"  # gets ipinfo for current ip
     api_call = requests.get(ipinfo_api_uri)
     if not api_call.status_code == 200:
         print("Error during API Call. Check your internet connection.")
@@ -41,6 +43,23 @@ def get_location() -> tuple[float, float, str]:
 
 
 def get_weather(latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str) -> tuple[int, str, str, float, float, float]:
+    """Gets the latest weather data for the passed latitude and longitude using api.open-meteo.com.
+    The API only takes latitude and longitude with 2 decimal places.
+
+    It checks if the API Call returned code 200.
+
+    :param latitude: The latitude rounded to 2 decimal places.
+    :type latitude: float
+    :param longitude: The longitude rounded to 2 decimal places.
+    :type longitude: float
+    :param wind_speed_unit: The unit of measurement for the speed of the wind in the format needed by the API.
+    :type wind_speed_unit: str
+    :param temperature_unit: The unit of measurement for the temperature in the format needed by the API.
+    :type temperature_unit: str
+
+    :returns: tuple: It contains the weather_code (a WMO Weather interpretation (WW) code that describes the current weather (1-99) (https://open-meteo.com/en/docs)) on index 0 as an int,
+    the sunrise on index 1 as a str, the sunset on index 2 as a str, the temperature on index 3 as a float, the apparent_temperature on index 4 as a float, the wind_speed on index 5 as a float.
+    """
     api_call = requests.get(
         f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&daily=sunrise,sunset&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto&forecast_days=1&wind_speed_unit={wind_speed_unit}&temperature_unit={temperature_unit}"
     )
@@ -57,6 +76,11 @@ def get_weather(latitude: float, longitude: float, wind_speed_unit: str, tempera
 
 
 def get_ascii_art_and_weather_name(weather_code: int) -> tuple[list[str], str]:
+    """Gets the ascii art for the passed weather_code and returns it in a list as well as the friendly name of the current weather.
+
+    :param weather_code: The code of the current weather returned by the API (a WMO Weather interpretation code (WW) 1-99. Further Information here: https://open-meteo.com/en/docs).
+    :type weather_code: int
+    """
     if weather_code == 0:
         return [
             r"               ",
@@ -154,7 +178,6 @@ def print_output(ascii_art: list[str], city: str, weather: str, temperature_str:
 
 def main() -> None:
     # Setup units according to configuration
-    global temperature_unit
     if wind_speed_unit == "mph":
         api_wind_speed_unit = "mph"
     elif wind_speed_unit == "km/h":
@@ -177,8 +200,6 @@ def main() -> None:
         print("Invalid temperature unit. Please use supported unit. Using default.")
         api_temperature_unit = "celsius"
 
-
-
     latitude, longitude, city = get_location()
     weather_code, sunrise, sunset, temperature, apparent_temperature, wind_speed = get_weather(latitude, longitude, api_wind_speed_unit, api_temperature_unit)
 
@@ -188,7 +209,6 @@ def main() -> None:
 
     wind_speed_str = f"{wind_speed} {wind_speed_unit}"
     temperature_str = f"{temperature} {temperature_unit}"
-
 
     if show_date:
         if date_format == "MM/DD/YYYY":
@@ -207,12 +227,10 @@ def main() -> None:
     else:
         current_date = None
 
-
     current_time = datetime.datetime.now().strftime("%H:%M:%S")
-
-
     ascii_art, weather = get_ascii_art_and_weather_name(weather_code)
     print_output(ascii_art, city, weather, temperature_str, wind_speed_str, sunrise, sunset, current_date, current_time)
+
 
 if __name__ == "__main__":
     main()
