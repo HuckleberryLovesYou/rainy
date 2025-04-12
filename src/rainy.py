@@ -7,7 +7,12 @@
 
 temperature_unit = "°C"  # Specify the unit of measurement for the temperature. Following units are valid: °C, °F, °K
 wind_speed_unit = "km/h" # Specify the unit of measurement for the speed of the wind. Following units are valid: mph, km/h, m/s, Knots
-show_city = True  # Show the city name in information, True or False
+show_city = True  # Show the city name, True or False
+show_weather = True # Shows the word-representation of the weather shown in the ascii art, True or False
+show_temperature = True # Show the temperature, True or False
+show_wind_speed = True # Show the wind speed, True or False
+show_sunrise = True # Show the sunrise, True or False
+show_sunset = True # Show the sunset, True or False
 show_date = True # Shows the current date. True or False
 date_format = "DD.MM.YYYY" # Specify the date format. Following formats are valid: MM/DD/YYYY, DD/MM/YYYY, YYYY/MM/DD, YYYY-MM-DD, DD.MM.YYYY
 show_time = True # Shows the current time. True or False
@@ -50,148 +55,101 @@ def get_weather(latitude: float, longitude: float, wind_speed_unit: str, tempera
     wind_speed: float = float(api_response["current"]["wind_speed_10m"])
     return weather_code, sunrise, sunset, temperature, apparent_temperature, wind_speed
 
-def print_output(weather_code: int, city: str, temperature_str: str, wind_speed_str: str, sunrise: str, sunset: str, current_date: str | None, current_time: str) -> None:
-    if weather_code == 0:
-        output = (
-            [
-                r"               " + "City: " + city,
-                r"     \   /     " + "Weather: clear",
-                r"      .-.      " + "Temperature: " + temperature_str,
-                r"   ‒ (   ) ‒   " + "Wind speed: " + wind_speed_str,
-                r"      `-᾿      " + "Sunrise: " + sunrise,
-                r"     /   \     " + "Sunset: " + sunset,
-                r"               " + "Date: " + current_date if show_date else "",
-                r"               " + "Time: " + current_time if show_time else "",
-            ]
-            if show_city
-            else [
-                r"               ",
-                r"     \   /     " + "Weather: clear",
-                r"      .-.      " + "Temperature: " + temperature_str,
-                r"   ‒ (   ) ‒   " + "Wind speed: " + wind_speed_str,
-                r"      `-᾿      " + "Sunrise: " + sunrise,
-                r"     /   \     " + "Sunset: " + sunset,
-                r"               " + "Date: " + current_date if show_date else "",
-                r"               " + "Time: " + current_time if show_time else "",
-            ]
-        )
-    elif weather_code in [1, 2, 3]:
-        output = (
-            [
-                r"                 " + "City: " + city if show_date else "",
-                r"       .--.      " + "Weather: cloudy",
-                r"    .-(    ).    " + "Temprature: " + temperature_str,
-                r"   (___.__)__)   " + "Wind speed: " + wind_speed_str,
-                r"                 " + "Sunrise: " + sunrise,
-                r"                 " + "Sunset: " + sunset,
-                r"                 " + "Date: " + current_date if show_date else "",
-                r"                 " + "Time: " + current_time if show_time else "",
-            ]
-            if show_city
-            else [
-                r"                 " + "Weather: cloudy",
-                r"       .--.      " + "Temprature: " + temperature_str,
-                r"    .-(    ).    " + "Wind speed: " + wind_speed_str,
-                r"   (___.__)__)   " + "Sunrise: " + sunrise,
-                r"                 " + "Sunset: " + sunset,
-                r"                 " + "Date: " + current_date if show_date else "",
-                r"                 " + "Time: " + current_time if show_time else "",
-            ]
-        )
-    elif weather_code in [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82]:
-        output = (
-            [
-                r"                 " + "City: " + city,
-                r"       .--.      " + "Weather: rainy",
-                r"    .-(    ).    " + "Temprature: " + temperature_str,
-                r"   (___.__)__)   " + "Wind speed: " + wind_speed_str,
-                r"    ʻ‚ʻ‚ʻ‚ʻ‚ʻ    " + "Sunrise: " + sunrise,
-                r"                 " + "Sunset: " + sunset,
-                r"                 " + "Date: " + current_date if show_date else "",
-                r"                 " + "Time: " + current_time if show_time else "",
-            ]
-            if show_city
-            else [
-                r"                 " + "Weather: rainy",
-                r"       .--.      " + "Temprature: " + temperature_str,
-                r"    .-(    ).    " + "Wind speed: " + wind_speed_str,
-                r"   (___.__)__)   " + "Sunrise: " + sunrise,
-                r"    ʻ‚ʻ‚ʻ‚ʻ‚ʻ    " + "Sunset: " + sunset,
-                r"                 " + "Date: " + current_date if show_date else "",
-                r"                 " + "Time: " + current_time if show_time else "",
-            ]
-        )
-    elif weather_code in [71, 73, 75, 77, 85, 86]:
-        output = (
-            [
-                r"                 " + "City: " + city,
-                r"       .--.      " + "Weather: snowy",
-                r"    .-(    ).    " + "Temprature: " + temperature_str,
-                r"   (___.__)__)   " + "Wind speed: " + wind_speed_str,
-                r"    * * * * *    " + "Sunrise: " + sunrise,
-                r"                 " + "Sunset: " + sunset,
-                r"                 " + "Date: " + current_date if show_date else "",
-                r"                 " + "Time: " + current_time if show_time else "",
-            ]
-            if show_city
-            else [
-                r"                 " + "Weather: snowy",
-                r"       .--.      " + "Temprature: " + temperature_str,
-                r"    .-(    ).    " + "Wind speed: " + wind_speed_str,
-                r"   (___.__)__)   " + "Sunrise: " + sunrise,
-                r"    * * * * *    " + "Sunset: " + sunset,
-                r"                 " + "Date: " + current_date if show_date else "",
-                r"                 " + "Time: " + current_time if show_time else "",
-            ]
-        )
-    elif weather_code in [95, 96, 99]:
-        output = (
-            [
-                r"                 " + "City: " + city,
-                r"       .--.      " + "Weather: stormy",
-                r"    .-(    ).    " + "Temprature: " + temperature_str,
-                r"   (___.__)__)   " + "Wind speed: " + wind_speed_str,
-                r"        /_       " + "Sunrise: " + sunrise,
-                r"         /       " + "Sunset: " + sunset,
-                r"                 " + "Date: " + current_date if show_date else "",
-                r"                 " + "Time: " + current_time if show_time else "",
-            ]
-            if show_city
-            else [
-                r"       .--.      " + "Weather: stormy",
-                r"    .-(    ).    " + "Temprature: " + temperature_str,
-                r"   (___.__)__)   " + "Wind speed: " + wind_speed_str,
-                r"        /_       " + "Sunrise: " + sunrise,
-                r"         /       " + "Sunset: " + sunset,
-                r"                 " + "Date: " + current_date if show_date else "",
-                r"                 " + "Time: " + current_time if show_time else "",
-            ]
-        )
-    else:
-        output = (
-            [
-                r"~~~~   ~~~~ ~~~   * ~~~~~~~ " + "City: " + city,
-                r"~~~   *  ~~~~~  * ~~~~  ~~~~" + "Weather: foggy",
-                r"  ~~~~  ~~~ * ~~~~~ ~~~~   ~" + "Temprature: " + temperature_str,
-                r"~~~~*   ~~~~   * ~~~~   ~~~~" + "Wind speed: " + wind_speed_str,
-                r"  * ~~~ ~~~~  ~~~~~  * ~~~~ " + "Sunrise: " + sunrise,
-                r"~~~~  * ~~~~ ~~~   ~~~~~~~~ " + "Sunset: " + sunset,
-                r"                            " + "Date: " + current_date if show_date else "",
-                r"                            " + "Time: " + current_time if show_time else "",
-            ]
-            if show_city
-            else [
-                r"  * ~~~ ~~~~  ~~~~~  * ~~~~ " + "Weather: foggy",
-                r"~~~   *  ~~~~~  * ~~~~  ~~~~" + "Temprature: " + temperature_str,
-                r"  ~~~~  ~~~ * ~~~~~ ~~~~   ~" + "Wind speed: " + wind_speed_str,
-                r"~~~~*   ~~~~   * ~~~~   ~~~~" + "Sunrise: " + sunrise,
-                r"  * ~~~ ~~~~  ~~~~~  * ~~~~ " + "Sunset: " + sunset,
-                r"~~~~  * ~~~~ ~~~   ~~~~~~~~ " + "Date: " + current_date if show_date else "",
-                r"                            " + "Time: " + current_time if show_time else "",
-            ]
-        )
 
-    print(*output, sep="\n")
+def get_ascii_art_and_weather_name(weather_code: int) -> tuple[list[str], str]:
+    if weather_code == 0:
+        return [
+            r"               ",
+            r"     \   /     ",
+            r"      .-.      ",
+            r"   ‒ (   ) ‒   ",
+            r"      `-᾿      ",
+            r"     /   \     ",
+            r"               "
+        ], "clear"
+    elif weather_code in [1, 2, 3]:
+        return [
+            r"                 ",
+            r"       .--.      ",
+            r"    .-(    ).    ",
+            r"   (___.__)__)   ",
+            r"                 ",
+            r"                 ",
+            r"                 ",
+        ], "cloudy"
+    elif weather_code in [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82]:
+        return [
+            r"                 ",
+            r"       .--.      ",
+            r"    .-(    ).    ",
+            r"   (___.__)__)   ",
+            r"    ʻ‚ʻ‚ʻ‚ʻ‚ʻ    ",
+            r"                 ",
+            r"                 ",
+        ], "rainy"
+    elif weather_code in [71, 73, 75, 77, 85, 86]:
+        return [
+            r"                 ",
+            r"       .--.      ",
+            r"    .-(    ).    ",
+            r"   (___.__)__)   ",
+            r"    * * * * *    ",
+            r"                 ",
+            r"                 ",
+        ], "snowy"
+    elif weather_code in [95, 96, 99]:
+        return [
+            r"                 ",
+            r"       .--.      ",
+            r"    .-(    ).    ",
+            r"   (___.__)__)   ",
+            r"        /_       ",
+            r"         /       ",
+            r"                 ",
+        ], "thundery"
+    else:
+        return [
+            r"~~~~ * ~~~~ ~~~   ~~~~~~ * ~"
+            r"~~~~   ~~~~ ~~~   * ~~~~~~~ "
+            r"~~~   *  ~~~~~  * ~~~~  ~~~~"
+            r"  ~~~~  ~~~ * ~~~~~ ~~~~   ~"
+            r"~~~~*   ~~~~   * ~~~~   ~~~~"
+            r"  * ~~~ ~~~~  ~~~~~  * ~~~~ "
+            r"~~~~  * ~~~~ ~~~   ~~~~~~~~ "
+        ], "foggy"
+
+
+def print_output(ascii_art: list[str], city: str, weather: str, temperature_str: str, wind_speed_str: str, sunrise: str, sunset: str, current_date: str, current_time: str) -> None:
+    values: list[str] = []
+    if show_city:
+        values.append(city)
+    if show_weather:
+        values.append(f"Weather: {weather}")
+    if show_temperature:
+        values.append(temperature_str)
+    if show_wind_speed:
+        values.append(wind_speed_str)
+    if show_sunrise:
+        values.append(sunrise)
+    if show_sunset:
+        values.append(sunset)
+    if show_date:
+        values.append(current_date)
+    if show_time:
+        values.append(current_time)
+
+    print(len(ascii_art))
+    print(len(values))
+    len_diff = len(values) - len(ascii_art)
+    if len_diff > 0:
+        for _ in range(len_diff):
+            ascii_art.append(" " * len(ascii_art[0]))
+
+    for i, ascii_art_line in enumerate(ascii_art):
+        try:
+            print(f"{ascii_art_line}{values[i]}")
+        except IndexError:
+            print(ascii_art_line)
 
 
 def main() -> None:
@@ -253,7 +211,8 @@ def main() -> None:
     current_time = datetime.datetime.now().strftime("%H:%M:%S")
 
 
-    print_output(weather_code, city, temperature_str, wind_speed_str, sunrise, sunset, current_date, current_time)
+    ascii_art, weather = get_ascii_art_and_weather_name(weather_code)
+    print_output(ascii_art, city, weather, temperature_str, wind_speed_str, sunrise, sunset, current_date, current_time)
 
 if __name__ == "__main__":
     main()
