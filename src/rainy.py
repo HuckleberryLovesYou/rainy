@@ -176,34 +176,34 @@ def print_output(ascii_art: list[str], city: str, weather: str, temperature_str:
     :type current_time: str
     :return: None
     """
-    values: list[str] = []
+    values: dict = {}
     if show_city:
-        values.append(city)
+        values["city"] = city
     if show_weather:
-        values.append(f"Weather: {weather}")
+        values["weather"] = weather
     if show_temperature:
-        values.append(temperature_str)
+        values["temperature"] = temperature_str
     if show_wind_speed:
-        values.append(wind_speed_str)
+        values["wind speed"] = wind_speed_str
     if show_sunrise:
-        values.append(sunrise)
+        values["sunrise"] = sunrise
     if show_sunset:
-        values.append(sunset)
+        values["sunset"] = sunset
     if show_date:
-        values.append(current_date)
+        values["date"] = current_date
     if show_time:
-        values.append(current_time)
+        values["time"] = current_time
 
     len_diff = len(values) - len(ascii_art)
     if len_diff > 0:
         for _ in range(len_diff):
             ascii_art.append(" " * len(ascii_art[0]))
 
-    for i, ascii_art_line in enumerate(ascii_art):
+    for i, (key, value) in enumerate(values.items()):
         try:
-            print(f"{ascii_art_line}{values[i]}")
+            print(f"{ascii_art[i]}{key}: {value}")
         except IndexError:
-            print(ascii_art_line)
+            print(ascii_art[i])
 
 
 def main() -> None:
