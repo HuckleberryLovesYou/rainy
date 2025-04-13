@@ -8,6 +8,7 @@ wind_speed_unit = "km/h"  # Specify the unit of measurement for the speed of the
 show_city = True  # Show the city name, True or False
 show_weather = True  # Shows the word-representation of the weather shown in the ascii art, True or False
 show_temperature = True  # Show the temperature, True or False
+show_apparent_temperature = True  # Show the apparent (feels like) temperature, True or False
 show_wind_speed = True  # Show the wind speed, True or False
 show_sunrise = True  # Show the sunrise, True or False
 show_sunset = True  # Show the sunset, True or False
@@ -236,9 +237,14 @@ def main() -> None:
     # converting celsius returned by api into kelvin
     if temperature_unit == "°K":
         temperature += 273.2
+        apparent_temperature += 273.2
 
     wind_speed_str = f"{wind_speed} {wind_speed_unit}"
     temperature_str = f"{temperature} {temperature_unit}"
+
+    # adds apparent temperature to temperature output
+    if show_apparent_temperature:
+        temperature_str = f"{temperature_str} feels like {apparent_temperature} {temperature_unit}"
 
     if show_date:
         if date_format == "MM/DD/YYYY":
