@@ -268,6 +268,7 @@ def main() -> None:
     elif time_format == 24:
         current_time = datetime.datetime.now().strftime("%H:%M:%S")
     else:
+        current_time = datetime.datetime.now().strftime("%H:%M:%S")
         print("Invalid time format. Please use supported date format. Using default.")
 
     ascii_art, weather = get_ascii_art_and_weather_name(weather_code)
