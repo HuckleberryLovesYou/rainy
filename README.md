@@ -18,7 +18,7 @@ Neofetch-like, minimalistic, and customizable weather-fetching cli tool for your
 To install rainy run the following command:
 
 ```commandline
-git clone https://github.com/HuckleberryLovesYou/rainy.git && cd ./rainy && make install && rainy
+git clone https://github.com/HuckleberryLovesYou/rainy.git && cd ./rainy && sudo make install && rainy
 ```
 
 After this you can just type `rainy` to execute it.
