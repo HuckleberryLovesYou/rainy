@@ -1,7 +1,13 @@
 # Rainy 🌦️
 Neofetch-like, minimalistic, and customizable weather-fetching cli tool for your current location on Linux and Windows.
 
-<img src="assets/preview.png">
+#### Linux
+
+<img src="assets/preview_linux.png">
+
+#### Windows
+
+<img src="assets/preview_windows.png">
 
 ## Installation
 
