@@ -8,8 +8,10 @@ wind_speed_unit = "km/h"  # Specify the unit of measurement for the speed of the
 show_city = True  # Show the city name, True or False
 show_weather = True  # Shows the word-representation of the weather shown in the ascii art, True or False
 show_temperature = True  # Show the temperature, True or False
-show_apparent_temperature = True  # Show the apparent (feels like) temperature, True or False
+show_apparent_temperature = False  # Show the apparent (feels like) temperature, True or False
+show_max_and_min_temperature = True  # Show the daily maximum and minimum temperature, True or False
 show_wind_speed = True  # Show the wind speed, True or False
+show_wind_direction = True  # Show the wind direction, True or False
 show_sunrise = True  # Show the sunrise, True or False
 show_sunset = True  # Show the sunset, True or False
 show_date = True  # Shows the current date. True or False
@@ -44,7 +46,7 @@ def get_location() -> tuple[float, float, str]:
     return latitude, longitude, city
 
 
-def get_weather(latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str) -> tuple[int, str, str, float, float, float]:
+def get_weather(latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str) -> tuple[int, str, str, float, float, float, float, float, int]:
     """Gets the latest weather data for the passed latitude and longitude using api.open-meteo.com.
     The API only takes latitude and longitude with 2 decimal places.
 
@@ -59,11 +61,10 @@ def get_weather(latitude: float, longitude: float, wind_speed_unit: str, tempera
     :param temperature_unit: The unit of measurement for the temperature in the format needed by the API.
     :type temperature_unit: str
 
-    :returns: tuple: It contains the weather_code (a WMO Weather interpretation (WW) code that describes the current weather (1-99) (https://open-meteo.com/en/docs)) on index 0 as an int,
-    the sunrise on index 1 as a str, the sunset on index 2 as a str, the temperature on index 3 as a float, the apparent_temperature on index 4 as a float, the wind_speed on index 5 as a float.
+    :returns: tuple: It contains the weather_code (a WMO Weather interpretation (WW) code that describes the current weather (1-99) (https://open-meteo.com/en/docs))
     """
     api_call = requests.get(
-        f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&daily=sunrise,sunset&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto&forecast_days=1&wind_speed_unit={wind_speed_unit}&temperature_unit={temperature_unit}"
+        f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&daily=sunrise,sunset,temperature_2m_max,temperature_2m_min&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m&timezone=auto&forecast_days=1&wind_speed_unit={wind_speed_unit}&temperature_unit={temperature_unit}"
     )
     if not api_call.status_code == 200:
         if api_call.status_code == 400:
@@ -75,9 +76,12 @@ def get_weather(latitude: float, longitude: float, wind_speed_unit: str, tempera
     sunrise: str = "".join(api_response["daily"]["sunrise"])[-5:]
     sunset: str = "".join(api_response["daily"]["sunset"])[-5:]
     temperature: float = float(api_response["current"]["temperature_2m"])
+    temperature_max: float = float(api_response["daily"]["temperature_2m_max"][0])
+    temperature_min: float = float(api_response["daily"]["temperature_2m_min"][0])
     apparent_temperature: float = float(api_response["current"]["apparent_temperature"])
     wind_speed: float = float(api_response["current"]["wind_speed_10m"])
-    return weather_code, sunrise, sunset, temperature, apparent_temperature, wind_speed
+    wind_direction: int = int(api_response["current"]["wind_direction_10m"])
+    return weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction
 
 
 def get_ascii_art_and_weather_name(weather_code: int) -> tuple[list[str], str]:
@@ -150,7 +154,7 @@ def get_ascii_art_and_weather_name(weather_code: int) -> tuple[list[str], str]:
         ], "foggy"
 
 
-def print_output(ascii_art: list[str], city: str, weather: str, temperature_str: str, wind_speed_str: str, sunrise: str, sunset: str, current_date: str, current_time: str) -> None:
+def print_output(ascii_art: list[str], city: str, weather: str, temperature_str: str, wind_speed_str: str, wind_direction_str: str | None, sunrise: str, sunset: str, current_date: str | None, current_time: str) -> None:
     """
     Prints the output of rainy to the terminal. It can take any amount of parameters. If no parameter is passed, the output will only be the ascii art of the current weather.
     If the amount of lines needed to display the passed parameters, it will expand the ascii art with blank lines in the same amount of characters and add the value behind it.
@@ -167,6 +171,8 @@ def print_output(ascii_art: list[str], city: str, weather: str, temperature_str:
     :type temperature_str: str
     :param wind_speed_str: Takes in the current wind speed already calculated with unit of measurement
     :type wind_speed_str: str
+    :param wind_direction_str: Takes in the current wind direction already formated with unit of measurement
+    :type wind_direction_str: str
     :param sunrise: Takes in the time of sunrise.
     :type sunrise: str
     :param sunset: Takes in the time of sunset.
@@ -186,6 +192,8 @@ def print_output(ascii_art: list[str], city: str, weather: str, temperature_str:
         values["temperature"] = temperature_str
     if show_wind_speed:
         values["wind speed"] = wind_speed_str
+    if show_wind_direction:
+        values["wind direction"] = wind_direction_str
     if show_sunrise:
         values["sunrise"] = sunrise
     if show_sunset:
@@ -232,19 +240,23 @@ def main() -> None:
         api_temperature_unit = "celsius"
 
     latitude, longitude, city = get_location()
-    weather_code, sunrise, sunset, temperature, apparent_temperature, wind_speed = get_weather(latitude, longitude, api_wind_speed_unit, api_temperature_unit)
+    weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction = get_weather(latitude, longitude, api_wind_speed_unit, api_temperature_unit)
 
     # converting celsius returned by api into kelvin
     if temperature_unit == "°K":
         temperature += 273.2
         apparent_temperature += 273.2
+        temperature_min += 273.2
+        temperature_max += 273.2
 
     wind_speed_str = f"{wind_speed} {wind_speed_unit}"
-    temperature_str = f"{temperature} {temperature_unit}"
+    temperature_str = f"{temperature}{temperature_unit}"
 
     # adds apparent temperature to temperature output
     if show_apparent_temperature:
-        temperature_str = f"{temperature_str} feels like {apparent_temperature} {temperature_unit}"
+        temperature_str += f" feels like {apparent_temperature}{temperature_unit}"
+    if show_max_and_min_temperature:
+        temperature_str += f" ({temperature_max}{temperature_unit} ↑ | {temperature_min}{temperature_unit} ↓)"
 
     if show_date:
         if date_format == "MM/DD/YYYY":
@@ -277,8 +289,20 @@ def main() -> None:
         current_time = datetime.datetime.now().strftime("%H:%M:%S")
         print("Invalid time format. Please use supported date format. Using default.")
 
+    if show_wind_direction:
+        if wind_direction < 44:
+            wind_direction_str: str = "N"
+        elif wind_direction < 134:
+            wind_direction_str: str = "E"
+        elif wind_direction < 225:
+            wind_direction_str: str = "S"
+        else:
+            wind_direction_str: str = "N"
+    else:
+        wind_direction_str: None = None
+
     ascii_art, weather = get_ascii_art_and_weather_name(weather_code)
-    print_output(ascii_art, city, weather, temperature_str, wind_speed_str, sunrise, sunset, current_date, current_time)
+    print_output(ascii_art, city, weather, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, current_date, current_time)
 
 
 if __name__ == "__main__":
