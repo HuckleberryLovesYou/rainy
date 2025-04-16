@@ -18,12 +18,17 @@ show_date = True  # Shows the current date. True or False
 date_format = "DD.MM.YYYY"  # Specify the date format. Following formats are valid: MM/DD/YYYY, DD/MM/YYYY, YYYY/MM/DD, YYYY-MM-DD, DD.MM.YYYY
 show_time = True  # Shows the current time. True or False
 time_format = 24  # Specify the time format. Following formats are valid: 12, 24
+use_emoji = True
+use_color = False
+show_ascii_art = True
 
 ###########################################################################################################################
 
 import requests
 import datetime
 import json
+import emoji
+from termcolor import termcolor
 
 def get_location() -> tuple[float, float, str]:
     """Gets the current location of the user based on his public IP Address using the ipinfo.io API.
@@ -46,7 +51,7 @@ def get_location() -> tuple[float, float, str]:
     return latitude, longitude, city
 
 
-def get_weather(latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str) -> tuple[int, str, str, float, float, float, float, float, int]:
+def get_weather(latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str) -> tuple[int, str, str, float, float, float, float, float, int, bool]:
     """Gets the latest weather data for the passed latitude and longitude using api.open-meteo.com.
     The API only takes latitude and longitude with 2 decimal places.
 
@@ -64,7 +69,7 @@ def get_weather(latitude: float, longitude: float, wind_speed_unit: str, tempera
     :returns: tuple: It contains the weather_code (a WMO Weather interpretation (WW) code that describes the current weather (1-99) (https://open-meteo.com/en/docs))
     """
     api_call = requests.get(
-        f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&daily=sunrise,sunset,temperature_2m_max,temperature_2m_min&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m&timezone=auto&forecast_days=1&wind_speed_unit={wind_speed_unit}&temperature_unit={temperature_unit}"
+        f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&daily=sunrise,sunset,temperature_2m_max,temperature_2m_min&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,is_day&timezone=auto&forecast_days=1&wind_speed_unit={wind_speed_unit}&temperature_unit={temperature_unit}"
     )
     if not api_call.status_code == 200:
         if api_call.status_code == 400:
@@ -81,27 +86,55 @@ def get_weather(latitude: float, longitude: float, wind_speed_unit: str, tempera
     apparent_temperature: float = float(api_response["current"]["apparent_temperature"])
     wind_speed: float = float(api_response["current"]["wind_speed_10m"])
     wind_direction: int = int(api_response["current"]["wind_direction_10m"])
-    return weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction
+    is_day: bool = bool(api_response["current"]["is_day"])
+    return weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day
+
+def get_weather_name(weather_code: int) -> str:
+    if weather_code == 0:
+        return "clear"
+    elif weather_code in [1, 2, 3]:
+        return "cloudy"
+    elif weather_code in [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82]:
+        return "rainy"
+    elif weather_code in [71, 73, 75, 77, 85, 86]:
+        return "snowy"
+    elif weather_code in [95, 96, 99]:
+        return "thundery"
+    else:
+        return "foggy"
 
 
-def get_ascii_art_and_weather_name(weather_code: int) -> tuple[list[str], str]:
+def get_ascii_art(weather_code: int, is_day: bool) -> list[str]:
     """Gets the ascii art for the passed weather_code and returns it in a list as well as the friendly name of the current weather.
 
     :param weather_code: The code of the current weather returned by the API (a WMO Weather interpretation code (WW) 1-99. Further Information here: https://open-meteo.com/en/docs).
     :type weather_code: int
 
-    :returns: tuple: It contains a list of the ascii art, where on each index there's a single line of the ascii art and the friendly name of the current weather, since get_weather() returns the weather code.
+    :returns: tuple: It contains a list of the ascii art, where on each index there's a single line of the ascii art.
     """
     if weather_code == 0:
-        return [
-            r"               ",
-            r"     \   /     ",
-            r"      .-.      ",
-            r"   ‒ (   ) ‒   ",
-            r"      `-᾿      ",
-            r"     /   \     ",
-            r"               "
-        ], "clear"
+        if is_day:
+            return [
+                r"               ",
+                r"     \   /     ",
+                r"      .-.      ",
+                r"   ‒ (   ) ‒   ",
+                r"      `-᾿      ",
+                r"     /   \     ",
+                r"               "
+            ]
+        else:
+            return [
+                r"               ",
+                r"         _.._  ",
+                r"       .' .-'` ",
+                r"      /  /     ",
+                r"      |  |     ",
+                r"      \  \     ",
+                r"       '._'-._ ",
+                r"          ```   "
+            ]
+
     elif weather_code in [1, 2, 3]:
         return [
             r"                 ",
@@ -111,7 +144,7 @@ def get_ascii_art_and_weather_name(weather_code: int) -> tuple[list[str], str]:
             r"                 ",
             r"                 ",
             r"                 ",
-        ], "cloudy"
+        ]
     elif weather_code in [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82]:
         return [
             r"                 ",
@@ -121,7 +154,7 @@ def get_ascii_art_and_weather_name(weather_code: int) -> tuple[list[str], str]:
             r"    ʻ‚ʻ‚ʻ‚ʻ‚ʻ    ",
             r"                 ",
             r"                 ",
-        ], "rainy"
+        ]
     elif weather_code in [71, 73, 75, 77, 85, 86]:
         return [
             r"                 ",
@@ -131,7 +164,7 @@ def get_ascii_art_and_weather_name(weather_code: int) -> tuple[list[str], str]:
             r"    * * * * *    ",
             r"                 ",
             r"                 ",
-        ], "snowy"
+        ]
     elif weather_code in [95, 96, 99]:
         return [
             r"                 ",
@@ -141,20 +174,61 @@ def get_ascii_art_and_weather_name(weather_code: int) -> tuple[list[str], str]:
             r"        /_       ",
             r"         /       ",
             r"                 ",
-        ], "thundery"
+        ]
     else:
         return [
-            r"~~~~ * ~~~~ ~~~   ~~~~~~ * ~"
+            r"                            "
             r"~~~~   ~~~~ ~~~   * ~~~~~~~ "
             r"~~~   *  ~~~~~  * ~~~~  ~~~~"
             r"  ~~~~  ~~~ * ~~~~~ ~~~~   ~"
             r"~~~~*   ~~~~   * ~~~~   ~~~~"
             r"  * ~~~ ~~~~  ~~~~~  * ~~~~ "
-            r"~~~~  * ~~~~ ~~~   ~~~~~~~~ "
-        ], "foggy"
+            r"                            "
+        ]
 
 
-def print_output(ascii_art: list[str], city: str, weather: str, temperature_str: str, wind_speed_str: str, wind_direction_str: str | None, sunrise: str, sunset: str, current_date: str | None, current_time: str) -> None:
+def get_emoji(key: str) -> emoji:
+    if key == "city":
+        return emoji.emojize(":derelict_house:")
+    elif key == "weather":
+        return emoji.emojize(":sun_behind_rain_cloud:")
+    elif key == "temperature":
+        return emoji.emojize(":thermometer:")
+    elif key == "wind speed":
+        return emoji.emojize(":dashing_away:")
+    elif key == "wind direction":
+        return emoji.emojize(":compass:")
+    elif key == "sunrise":
+        return emoji.emojize(":sunrise:")
+    elif key == "sunset":
+        return emoji.emojize(":sunset:")
+    elif key == "date":
+        return emoji.emojize(":calendar:")
+    elif key == "time":
+        return emoji.emojize(":alarm_clock:")
+    else:
+        return ""
+
+def get_color(key: str) -> str:
+    if key == "city":
+        return "blue"
+    elif key == "weather":
+        return "cyan"
+    elif key == "temperature":
+        return "red"
+    elif key == "wind speed":
+        return "green"
+    elif key == "wind direction":
+        return "yellow"
+    elif key == "sunrise":
+        return "magenta"
+    elif key == "sunset":
+        return "magenta"
+    else:
+        return "white"
+
+
+def print_output(ascii_art: list[str] | None, city: str, weather: str | None, temperature_str: str, wind_speed_str: str, wind_direction_str: str | None, sunrise: str, sunset: str, current_date: str | None, current_time: str) -> None:
     """
     Prints the output of rainy to the terminal. It can take any amount of parameters. If no parameter is passed, the output will only be the ascii art of the current weather.
     If the amount of lines needed to display the passed parameters, it will expand the ascii art with blank lines in the same amount of characters and add the value behind it.
@@ -186,7 +260,7 @@ def print_output(ascii_art: list[str], city: str, weather: str, temperature_str:
     values: dict = {}
     if show_city:
         values["city"] = city
-    if show_weather:
+    if show_weather and weather is not None:
         values["weather"] = weather
     if show_temperature:
         values["temperature"] = temperature_str
@@ -203,16 +277,27 @@ def print_output(ascii_art: list[str], city: str, weather: str, temperature_str:
     if show_time:
         values["time"] = current_time
 
-    len_diff = len(values) - len(ascii_art)
-    if len_diff > 0:
-        for _ in range(len_diff):
-            ascii_art.append(" " * len(ascii_art[0]))
+    if show_ascii_art:
+        len_diff = len(values) - len(ascii_art)
+        if len_diff > 0:
+            for _ in range(len_diff):
+                ascii_art.append(" " * len(ascii_art[0]))
 
-    for i, (key, value) in enumerate(values.items()):
-        try:
-            print(f"{ascii_art[i]}{key}: {value}")
-        except IndexError:
-            print(ascii_art[i])
+        for i, (key, value) in enumerate(values.items()):
+            try:
+                if use_color:
+                    print(ascii_art[i], end="")
+                    termcolor.cprint(f"{get_emoji(key) if use_emoji is True else ""} {key.capitalize()}: {value}", f"{get_color(key)}")
+                else:
+                    print(f"{ascii_art[i]}{get_emoji(key) if use_emoji is True else ""} {key.capitalize()}: {value}")
+            except IndexError:
+                print(ascii_art[i])
+    else:
+        for key, value in values.items():
+            if use_color:
+                termcolor.cprint(f"{get_emoji(key) if use_emoji is True else ""} {key.capitalize()}: {value}", f"{get_color(key)}")
+            else:
+                print(f"{get_emoji(key) if use_emoji is True else ""} {key.capitalize()}: {value}")
 
 
 def main() -> None:
@@ -240,7 +325,7 @@ def main() -> None:
         api_temperature_unit = "celsius"
 
     latitude, longitude, city = get_location()
-    weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction = get_weather(latitude, longitude, api_wind_speed_unit, api_temperature_unit)
+    weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day = get_weather(latitude, longitude, api_wind_speed_unit, api_temperature_unit)
 
     # converting celsius returned by api into kelvin
     if temperature_unit == "°K":
@@ -294,14 +379,23 @@ def main() -> None:
             wind_direction_str: str = "N"
         elif wind_direction < 134:
             wind_direction_str: str = "E"
-        elif wind_direction < 225:
+        elif wind_direction < 224:
             wind_direction_str: str = "S"
         else:
             wind_direction_str: str = "N"
     else:
         wind_direction_str: None = None
 
-    ascii_art, weather = get_ascii_art_and_weather_name(weather_code)
+    if show_ascii_art:
+        ascii_art = get_ascii_art(weather_code, is_day)
+    else:
+        ascii_art = None
+
+    if show_weather:
+        weather = get_weather_name(weather_code)
+    else:
+        weather = None
+
     print_output(ascii_art, city, weather, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, current_date, current_time)
 
 
