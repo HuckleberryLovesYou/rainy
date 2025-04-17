@@ -42,7 +42,8 @@ Reopen any terminals you have currently opened, and then type `rainy` in your te
 ## Dependencies
 
 * `python`
-* `requests`
+* `python3-requests`
+* `python3-emoji`
 * `make`
 
 You can install all of them from your distribution repositories.
