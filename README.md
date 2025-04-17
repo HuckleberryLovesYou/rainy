@@ -51,19 +51,7 @@ You can install all of them from your distribution repositories.
 #### 🐧 Debian/Ubuntu
 
 ```commandline
-sudo apt update -y && sudo apt install -y python3 python3-pip make && pip3 install --quiet requests
-```
-
-#### 🐮 Fedora
-
-```commandline
-sudo dnf install -y python3 python3-pip make && pip3 install --quiet requests
-```
-
-#### 🧪 Arch / Manjaro
-
-```commandline
-sudo pacman -Sy --noconfirm python python-pip make && pip install --quiet requests
+sudo apt update -y && sudo apt install -y python3 python3-requests python3-emoji make
 ```
 
 #### Windows
