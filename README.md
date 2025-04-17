@@ -44,6 +44,7 @@ Reopen any terminals you have currently opened, and then type `rainy` in your te
 * `python`
 * `python3-requests`
 * `python3-emoji`
+* `python3-termcolor`
 * `make`
 
 You can install all of them from your distribution repositories.
@@ -51,7 +52,7 @@ You can install all of them from your distribution repositories.
 #### 🐧 Debian/Ubuntu
 
 ```commandline
-sudo apt update -y && sudo apt install -y python3 python3-requests python3-emoji make
+sudo apt update -y && sudo apt install -y python3 python3-requests python3-emoji python3-termcolor make
 ```
 
 #### Windows
