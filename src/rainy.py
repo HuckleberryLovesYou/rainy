@@ -28,7 +28,7 @@ import requests
 import datetime
 import json
 import emoji
-from termcolor import termcolor
+import termcolor
 
 def get_location() -> tuple[float, float, str]:
     """Gets the current location of the user based on his public IP Address using the ipinfo.io API.
