@@ -36,7 +36,7 @@ git clone https://github.com/HuckleberryLovesYou/rainy.git
 ```
 
 After that, edit the config section in the rainy.py file located in `.\rainy\src\`.
-Now, add the folder (most likely called `rainy`), where the `rainy.bat` file is located to your PATH environment variable.
+Now, add the folder called `rainy`, in which the `rainy.bat` file is located to your PATH environment variable like shown [here](https://stackoverflow.com/a/44272417/27739226).
 Reopen any terminals you have currently opened, and then type `rainy` in your terminal.
 
 ## Dependencies
