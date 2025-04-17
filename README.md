@@ -126,8 +126,6 @@ Default: True
 What if there's an update?
 You can just update your local repository with running `git pull` in the cloned folder. After that run `sudo make install`.
 
----
-
 ### Fork
 
 This is a fork of a smaller project by [Rainy by loefey](https://github.com/loefey/rainy).

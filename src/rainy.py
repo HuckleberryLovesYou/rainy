@@ -188,6 +188,14 @@ def get_ascii_art(weather_code: int, is_day: bool) -> list[str]:
 
 
 def get_emoji(key: str) -> emoji:
+    """
+    Gets the emoji for the passed key.
+    If the key is not valid or unset, it returns an empty string.
+
+    :param key: A key of an entry in the dictionary 'values'
+    :type: key: string
+    :return: An emoji that represents the key passed into it. If the key is not valid or unset, it returns an empty string.
+    """
     if key == "city":
         return emoji.emojize(":derelict_house:")
     elif key == "weather":
@@ -210,6 +218,14 @@ def get_emoji(key: str) -> emoji:
         return ""
 
 def get_color(key: str) -> str:
+    """
+    Gets the color for the passed key.
+    If the key is not valid or unset, it returns the color 'white'.
+
+    :param key: A key of an entry in the dictionary 'values'
+    :type: key: string
+    :return: A string containing the color for the termcolor output depending on the passed key. If the key is not valid or unset, it returns the color 'white'.
+    """
     if key == "city":
         return "blue"
     elif key == "weather":
