@@ -28,7 +28,6 @@ show_ascii_art = True
 
 import requests
 import datetime
-import json
 import emoji
 import termcolor
 import argparse
@@ -102,25 +101,31 @@ def get_weather(latitude: float, longitude: float, wind_speed_unit: str, tempera
 
     :returns: tuple: It contains the weather_code (a WMO Weather interpretation (WW) code that describes the current weather (1-99) (https://open-meteo.com/en/docs))
     """
-    api_call = requests.get(
-        f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&daily=sunrise,sunset,temperature_2m_max,temperature_2m_min&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,is_day&timezone=auto&forecast_days=1&wind_speed_unit={wind_speed_unit}&temperature_unit={temperature_unit}"
-    )
-    if not api_call.status_code == 200:
-        if api_call.status_code == 400:
-            print("Error during API Call. URL parameter is not correctly specified")
-        else:
-            print("Error during API Call. Check your internet connection.")
-    api_response = json.loads(api_call.text)
-    weather_code: int = int(api_response["current"]["weather_code"])
-    sunrise: str = "".join(api_response["daily"]["sunrise"])[-5:]
-    sunset: str = "".join(api_response["daily"]["sunset"])[-5:]
-    temperature: float = float(api_response["current"]["temperature_2m"])
-    temperature_max: float = float(api_response["daily"]["temperature_2m_max"][0])
-    temperature_min: float = float(api_response["daily"]["temperature_2m_min"][0])
-    apparent_temperature: float = float(api_response["current"]["apparent_temperature"])
-    wind_speed: float = float(api_response["current"]["wind_speed_10m"])
-    wind_direction: int = int(api_response["current"]["wind_direction_10m"])
-    is_day: bool = bool(api_response["current"]["is_day"])
+    forecast_api_uri = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "daily": "sunrise,sunset,temperature_2m_max,temperature_2m_min",
+        "current": "temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,is_day",
+        "timezone": "auto",
+        "forecast_days": 1,
+        "wind_speed_unit": wind_speed_unit,
+        "temperature_unit": temperature_unit
+    }
+    response = requests.get(forecast_api_uri, params=params)
+    response.raise_for_status()
+
+    data = response.json()
+    weather_code: int = int(data["current"]["weather_code"])
+    sunrise: str = "".join(data["daily"]["sunrise"])[-5:]
+    sunset: str = "".join(data["daily"]["sunset"])[-5:]
+    temperature: float = float(data["current"]["temperature_2m"])
+    temperature_max: float = float(data["daily"]["temperature_2m_max"][0])
+    temperature_min: float = float(data["daily"]["temperature_2m_min"][0])
+    apparent_temperature: float = float(data["current"]["apparent_temperature"])
+    wind_speed: float = float(data["current"]["wind_speed_10m"])
+    wind_direction: int = int(data["current"]["wind_direction_10m"])
+    is_day: bool = bool(data["current"]["is_day"])
     return weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day
 
 def get_weather_name(weather_code: int) -> str:
