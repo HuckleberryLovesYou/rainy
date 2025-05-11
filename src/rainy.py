@@ -126,13 +126,13 @@ def get_ascii_art(weather_code: int, is_day: bool) -> list[str]:
         else:
             return [
                 r"               ",
-                r"         _.._  ",
-                r"       .' .-'` ",
-                r"      /  /     ",
-                r"      |  |     ",
-                r"      \  \     ",
-                r"       '._'-._ ",
-                r"          ```   "
+                r"       _.._    ",
+                r"     .' .-'`   ",
+                r"    /  /       ",
+                r"    |  |       ",
+                r"    \  \       ",
+                r"     '._'-._   ",
+                r"        ```    "
             ]
 
     elif weather_code in [1, 2, 3]:
