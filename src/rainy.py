@@ -3,6 +3,8 @@
 # Config
 ###########################################################################################################################
 
+city_name = "" # OPTIONAL (If not specified, looks up location by public IP) - Specify the city name to look for. For example for Potsdam the cit name would be 'Potsdam'.
+country_code = "" # OPTIONAL (If not specified, looks up location by public IP) - Specify the country code of the country to look for the above specified city name. For example for Germany the country code would be 'DE'.
 temperature_unit = "°C"  # Specify the unit of measurement for the temperature. Following units are valid: °C, °F, °K
 speed_unit = "km/h"  # Specify the unit of measurement for the speed of the wind. Following units are valid: mph, km/h, m/s, Knots
 show_city = True  # Show the city name, True or False
@@ -29,9 +31,12 @@ import datetime
 import json
 import emoji
 import termcolor
+import argparse
 
-def get_location() -> tuple[float, float, str]:
-    """Gets the current location of the user based on his public IP Address using the ipinfo.io API.
+
+def get_location_by_ip() -> tuple[float, float, str]:
+    """
+    Gets the current location of the user based on his public IP Address using the ipinfo.io API.
     If the User uses a VPN or Proxy, the location got, will be the location of the proxy or the VPN exit node.
 
     It checks if the API Call returned code 200. The latitude and longitude are rounded to 2 decimal places.
@@ -39,23 +44,52 @@ def get_location() -> tuple[float, float, str]:
     :returns: tuple: It contains the latitude on index 0, longitude on index 1 and the city on index 2
     """
     ipinfo_api_uri = "https://ipinfo.io/json"  # gets ipinfo for current ip
-    api_call = requests.get(ipinfo_api_uri)
-    if not api_call.status_code == 200:
-        print("Error during API Call. Check your internet connection.")
-    api_response = json.loads(api_call.text)
-    latitude_str, longitude_str = api_response["loc"].split(',')
+    response = requests.get(ipinfo_api_uri)
+    response.raise_for_status()
+
+    data = response.json()
+    if not data:
+        raise ValueError(f"No results found for your public IP.")
+
+    latitude_str, longitude_str = data["loc"].split(',')
     latitude = round(float(latitude_str), 2)
     longitude = round(float(longitude_str), 2)
 
-    city = api_response["city"]
+    city = data["city"]
     return latitude, longitude, city
+
+
+def get_location_by_city_name(city_name: str, country_code: str | None = None) -> tuple[float, float, str]:
+    geocoding_api_uri: str = "https://geocoding-api.open-meteo.com/v1/search"
+    params = {
+        "name": city_name,
+        "count": 1,
+        "language": "en",
+        "format": "json"
+    }
+    
+    if country_code:
+        params["countryCode"] = country_code
+
+    response = requests.get(geocoding_api_uri, params=params)
+    response.raise_for_status()
+
+    data = response.json()
+    results = data.get("results")
+    if not results:
+        raise ValueError(f"No results found for {city_name!r} ({country_code}).")
+
+    latitude_str = results[0]["latitude"]
+    longitude_str = results[0]["longitude"]
+    latitude = round(float(latitude_str), 2)
+    longitude = round(float(longitude_str), 2)
+
+    return latitude, longitude, city_name
 
 
 def get_weather(latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str) -> tuple[int, str, str, float, float, float, float, float, int, bool]:
     """Gets the latest weather data for the passed latitude and longitude using api.open-meteo.com.
     The API only takes latitude and longitude with 2 decimal places.
-
-    It checks if the API Call returned code 200.
 
     :param latitude: The latitude rounded to 2 decimal places.
     :type latitude: float
@@ -357,15 +391,49 @@ def get_api_temperature_unit(unit: str) -> str:
         return "celsius"
 
 
+def create_parser() -> argparse.PARSER:
+    parser = argparse.ArgumentParser(
+        prog="Rainy",
+        description="Neofetch-like, minimalistic, and customizable weather-fetching tool.",
+        epilog="Example: %(prog)s TODO"
+    )
+    parser.add_argument("-city, --city-name", dest="city_name", help="Specify the city name to look for. For example for Potsdam the cit name would be 'Potsdam'. If not specified, looks up location by your public IP.", type=str)
+    parser.add_argument("-country", "--country-code", dest="country_code", help="Specify the country code for the country to look for the specified city . For example for Potsdam the cit name would be 'Potsdam'. If not specified, looks up location by your public IP.", type=str)
+
+    return parser
+
 def main() -> None:
+    # parse CLI arguments
+    parser = create_parser()
+    try:
+        args = parser.parse_args()
+    except SystemExit:
+        # Help was triggered or parsing failed
+        exit()
+
+    if args.country_code and not args.city_name:
+        raise Exception("--country requires --city")
+
+
     # Setup units according to configuration
     api_speed_unit = get_api_speed_unit(speed_unit)
     api_temperature_unit = get_api_temperature_unit(temperature_unit)
 
 
+    if args.city_name:
+        if args.country_code:
+            latitude, longitude, city = get_location_by_city_name(args.city_name, args.country_code)
+        else:
+            latitude, longitude, city = get_location_by_city_name(args.city_name)
+    elif city_name:
+        if country_code:
+            latitude, longitude, city = get_location_by_city_name(city_name, country_code)
+        else:
+            latitude, longitude, city = get_location_by_city_name(city_name)
+    else:
+        latitude, longitude, city = get_location_by_ip()
 
-    latitude, longitude, city = get_location()
-    weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day = get_weather(latitude, longitude, api_wind_speed_unit, api_temperature_unit)
+    weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day = get_weather(latitude, longitude, api_speed_unit, api_temperature_unit)
 
     # converting Celsius returned by api into kelvin
     if temperature_unit == "°K":
