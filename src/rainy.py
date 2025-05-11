@@ -84,7 +84,7 @@ def get_location_by_city_name(city_name: str, country_code: str | None = None) -
     latitude = round(float(latitude_str), 2)
     longitude = round(float(longitude_str), 2)
 
-    return latitude, longitude, city_name
+    return latitude, longitude, results[0]["name"]
 
 
 def get_weather(latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str) -> tuple[int, str, str, float, float, float, float, float, int, bool]:
