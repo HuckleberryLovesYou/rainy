@@ -398,7 +398,7 @@ def create_parser() -> argparse.PARSER:
         epilog="Example: %(prog)s TODO"
     )
     parser.add_argument("-city, --city-name", dest="city_name", help="Specify the city name to look for. For example for Potsdam the cit name would be 'Potsdam'. If not specified, looks up location by your public IP.", type=str)
-    parser.add_argument("-country", "--country-code", dest="country_code", help="Specify the country code for the country to look for the specified city . For example for Potsdam the cit name would be 'Potsdam'. If not specified, looks up location by your public IP.", type=str)
+    parser.add_argument("-country", "--country-code", dest="country_code", help="Specify the country code for the country to look for the specified city . A List of Country Codes can be found here: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements", type=str)
 
     return parser
 
