@@ -4,7 +4,7 @@
 ###########################################################################################################################
 
 temperature_unit = "°C"  # Specify the unit of measurement for the temperature. Following units are valid: °C, °F, °K
-wind_speed_unit = "km/h"  # Specify the unit of measurement for the speed of the wind. Following units are valid: mph, km/h, m/s, Knots
+speed_unit = "km/h"  # Specify the unit of measurement for the speed of the wind. Following units are valid: mph, km/h, m/s, Knots
 show_city = True  # Show the city name, True or False
 show_weather = True  # Shows the word-representation of the weather shown in the ascii art, True or False
 show_temperature = True  # Show the temperature, True or False
@@ -315,42 +315,66 @@ def print_output(ascii_art: list[str] | None, city: str, weather: str | None, te
             else:
                 print(f"{get_emoji(key) if use_emoji is True else ""} {key.capitalize()}: {value}")
 
+def get_api_speed_unit(unit: str) -> str:
+    """
+    Convert any speed unit into the API representation for the API Call.
+    If an invalid unit is requested, it will return the default unit.
+    Default: "kmh" (km/h)
+    :param unit: This is the speed unit to get the API representation for.
+    :type unit: str
+    :return: API representation of the requested unit
+    """
+    if unit == "mph":
+        return "mph"
+    elif unit == "km/h":
+        return "kmh"
+    elif unit == "m/s":
+        return "ms"
+    elif unit.lower() == "knots":
+        return "kn"
+    else:
+        print("Invalid wind speed unit. Please use supported unit. Using default.")
+        return "kmh"
+
+def get_api_temperature_unit(unit: str) -> str:
+    """
+    Convert any temperature unit into the API representation for the API Call.
+    The API can't handle kelvin, which means it has to be converted afterward. For easy conversion, Celsius will be used for the API call.
+    If an invalid unit is requested, it will return the default unit.
+    Default: "celsius" (Celsius)
+    :param unit: This is the temperature unit to get the API representation for.
+    :type unit: str
+    :return: API representation of the requested unit
+    """
+    if unit == "°C":
+        return "celsius"
+    elif unit == "°F":
+        return "fahrenheit"
+    elif unit == "°K":
+        return "celsius"
+    else:
+        print("Invalid temperature unit. Please use supported unit. Using default.")
+        return "celsius"
+
 
 def main() -> None:
     # Setup units according to configuration
-    if wind_speed_unit == "mph":
-        api_wind_speed_unit = "mph"
-    elif wind_speed_unit == "km/h":
-        api_wind_speed_unit = "kmh"
-    elif wind_speed_unit == "m/s":
-        api_wind_speed_unit = "ms"
-    elif wind_speed_unit.lower() == "knots":
-        api_wind_speed_unit = "kn"
-    else:
-        print("Invalid wind speed unit. Please use supported unit. Using default.")
-        api_wind_speed_unit = "kmh"
+    api_speed_unit = get_api_speed_unit(speed_unit)
+    api_temperature_unit = get_api_temperature_unit(temperature_unit)
 
-    if temperature_unit == "°C":
-        api_temperature_unit = "celsius"
-    elif temperature_unit == "°F":
-        api_temperature_unit = "fahrenheit"
-    elif temperature_unit == "°K":
-        api_temperature_unit = "celsius"
-    else:
-        print("Invalid temperature unit. Please use supported unit. Using default.")
-        api_temperature_unit = "celsius"
+
 
     latitude, longitude, city = get_location()
     weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day = get_weather(latitude, longitude, api_wind_speed_unit, api_temperature_unit)
 
-    # converting celsius returned by api into kelvin
+    # converting Celsius returned by api into kelvin
     if temperature_unit == "°K":
         temperature += 273.2
         apparent_temperature += 273.2
         temperature_min += 273.2
         temperature_max += 273.2
 
-    wind_speed_str = f"{wind_speed} {wind_speed_unit}"
+    wind_speed_str = f"{wind_speed} {speed_unit}"
     temperature_str = f"{temperature}{temperature_unit}"
 
     # adds apparent temperature to temperature output
