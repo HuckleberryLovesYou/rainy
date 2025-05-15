@@ -1,2 +1,3 @@
 @echo off
-py.exe "%~dp0\src\rainy.py" %*
+cd "%~dp0\src\"
+py.exe "rainy.py" %*
