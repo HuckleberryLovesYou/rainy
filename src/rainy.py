@@ -1,37 +1,39 @@
 #!/usr/bin/env python3
 
-# Config
-###########################################################################################################################
-
-city_name = "" # OPTIONAL (If not specified, looks up location by public IP) - Specify the city name to look for. For example for Potsdam the cit name would be 'Potsdam'.
-country_code = "" # OPTIONAL (If not specified, looks up location by public IP) - Specify the country code of the country to look for the above specified city name. For example for Germany the country code would be 'DE'.
-temperature_unit = "°C"  # Specify the unit of measurement for the temperature. Following units are valid: °C, °F, °K
-speed_unit = "km/h"  # Specify the unit of measurement for the speed of the wind. Following units are valid: mph, km/h, m/s, Knots
-show_city = True  # Show the city name, True or False
-show_weather = True  # Shows the word-representation of the weather shown in the ascii art, True or False
-show_temperature = True  # Show the temperature, True or False
-show_apparent_temperature = False  # Show the apparent (feels like) temperature, True or False
-show_max_and_min_temperature = True  # Show the daily maximum and minimum temperature, True or False
-show_wind_speed = True  # Show the wind speed, True or False
-show_wind_direction = True  # Show the wind direction, True or False
-show_sunrise = True  # Show the sunrise, True or False
-show_sunset = True  # Show the sunset, True or False
-show_date = True  # Shows the current date. True or False
-date_format = "DD.MM.YYYY"  # Specify the date format. Following formats are valid: MM/DD/YYYY, DD/MM/YYYY, YYYY/MM/DD, YYYY-MM-DD, DD.MM.YYYY
-show_time = True  # Shows the current time. True or False
-time_format = 24  # Specify the time format. Following formats are valid: 12, 24
-use_emoji = True
-use_color = False
-show_ascii_art = True
-
-###########################################################################################################################
-
 import requests
 import datetime
 import emoji
 import termcolor
 import argparse
+import configparser
 
+config = configparser.ConfigParser()
+config.read("rainy.conf.ini")
+# loads config from rainy.conf.ini
+city_name = config.get("Location", "city_name")
+country_code = config.get("Location", "country_code")
+
+temperature_unit = "°" + config.get("Units", "temperature_unit")
+speed_unit = config.get("Units", "speed_unit")
+
+date_format = config.get("Formats", "date_format")
+time_format = config.getint("Formats", "time_format")
+
+show_city = config.getboolean("Show", "show_city")
+show_weather = config.getboolean("Show", "show_weather")
+show_temperature = config.getboolean("Show", "show_temperature")
+show_apparent_temperature = config.getboolean("Show", "show_apparent_temperature")
+show_max_and_min_temperature = config.getboolean("Show", "show_max_and_min_temperature")
+show_wind_speed = config.getboolean("Show", "show_wind_speed")
+show_wind_direction = config.getboolean("Show", "show_wind_direction")
+show_sunrise = config.getboolean("Show", "show_sunrise")
+show_sunset = config.getboolean("Show", "show_sunset")
+show_date = config.getboolean("Show", "show_date")
+show_time = config.getboolean("Show", "show_time")
+
+use_emoji = config.getboolean("Output", "use_emoji")
+use_color = config.getboolean("Output", "use_color")
+show_ascii_art = config.getboolean("Output", "show_ascii_art")
 
 def get_location_by_ip() -> tuple[float, float, str]:
     """
