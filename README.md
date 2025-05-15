@@ -119,3 +119,5 @@ You can just update your local repository with running `git pull` in the cloned 
 
 This is a fork of a smaller project by [Rainy by loefey](https://github.com/loefey/rainy).
 Upstream is unmaintained. He has rewritten and upgraded it in Rust, creating [Thundery](https://github.com/loefey/thundery).
+
+Icon used for executable in releases: https://www.flaticon.com/free-icons/rain
