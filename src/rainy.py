@@ -445,10 +445,10 @@ def main() -> None:
 
     # converting Celsius returned by api into kelvin
     if temperature_unit == "°K":
-        temperature += 273.2
-        apparent_temperature += 273.2
-        temperature_min += 273.2
-        temperature_max += 273.2
+        temperature = round(temperature + 273.2, 1)
+        apparent_temperature = round(apparent_temperature + 273.2, 1)
+        temperature_min = round(temperature_min + 273.2, 1)
+        temperature_max = round(temperature_max + 273.2, 1)
 
     wind_speed_str = f"{wind_speed} {speed_unit}"
     temperature_str = f"{temperature}{temperature_unit}"
