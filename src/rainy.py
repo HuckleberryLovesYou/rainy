@@ -492,13 +492,13 @@ def main() -> None:
 
     if show_wind_direction:
         if wind_direction < 44:
-            wind_direction_str: str = "N"
+            wind_direction_str: str = "North"
         elif wind_direction < 134:
-            wind_direction_str: str = "E"
+            wind_direction_str: str = "East"
         elif wind_direction < 224:
-            wind_direction_str: str = "S"
+            wind_direction_str: str = "South"
         else:
-            wind_direction_str: str = "N"
+            wind_direction_str: str = "West"
     else:
         wind_direction_str: None = None
 
