@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import requests
 import datetime
 import emoji
@@ -8,7 +9,7 @@ import argparse
 import configparser
 
 config = configparser.ConfigParser()
-config.read("rainy.conf.ini")
+config.read(os.path.join(os.path.dirname(__file__), "rainy.conf.ini"))
 # loads config from rainy.conf.ini
 city_name = config.get("Location", "city_name")
 country_code = config.get("Location", "country_code")
