@@ -156,11 +156,13 @@ def get_weather_name(weather_code: int) -> str:
         return "foggy"
 
 
-def get_ascii_art(weather_code: int, is_day: bool) -> list[str]:
+def get_ascii_art(weather_code: int, is_day: bool = True) -> list[str]:
     """Gets the ascii art for the passed weather_code and returns it in a list as well as the friendly name of the current weather.
 
     :param weather_code: The code of the current weather returned by the API (a WMO Weather interpretation code (WW) 1-99. Further Information here: https://open-meteo.com/en/docs).
     :type weather_code: int
+    :param is_day: Changes the output to sun or moon if the weather_code stands for 'clear' (Weather code = 0) [Default=True]
+    :type weather_code: boolean
 
     :returns: tuple: It contains a list of the ascii art, where on each index there's a single line of the ascii art.
     """
