@@ -501,7 +501,7 @@ def main() -> None:
 
     date = get_current_date(config.get("date_format"))
 
-    if config.get("time_format") == 12:
+    if config.get("time_format") == "12":
         current_time = datetime.datetime.now().strftime("%I:%M:%S %p")
 
         sunrise_time_obj = datetime.datetime.strptime(sunrise, "%H:%M")
@@ -510,8 +510,8 @@ def main() -> None:
         sunset = sunset_time_obj.strftime("%I:%M %p")
     else:
         current_time = datetime.datetime.now().strftime("%H:%M:%S")
-        if config.get("time_format") == 24:
             print("Invalid time format. Please use supported date format. Using default.")
+        if config.get("time_format") == "24":
 
     wind_direction_str = get_wind_direction(wind_direction)
 
