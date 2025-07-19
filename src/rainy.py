@@ -59,8 +59,25 @@ def get_location_by_city_name(city_name: str, country_code: str | None = None) -
 
     return latitude, longitude, results[0]["name"]
 
+def parse_weather(data: dict) -> tuple[int, str, str, float, float, float, float, float, int, bool]:
+    """
+    :param data:
+    :return: tuple: It contains the weather_code (a WMO Weather interpretation (WW) code that describes the current weather (1-99) (https://open-meteo.com/en/docs))
+    """
 
-def get_weather(latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str) -> tuple[int, str, str, float, float, float, float, float, int, bool]:
+    weather_code: int = int(data["current"]["weather_code"])
+    sunrise: str = "".join(data["daily"]["sunrise"])[-5:]
+    sunset: str = "".join(data["daily"]["sunset"])[-5:]
+    temperature: float = float(data["current"]["temperature_2m"])
+    temperature_max: float = float(data["daily"]["temperature_2m_max"][0])
+    temperature_min: float = float(data["daily"]["temperature_2m_min"][0])
+    apparent_temperature: float = float(data["current"]["apparent_temperature"])
+    wind_speed: float = float(data["current"]["wind_speed_10m"])
+    wind_direction: int = int(data["current"]["wind_direction_10m"])
+    is_day: bool = bool(data["current"]["is_day"])
+    return weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day
+
+def get_weather_by_api(city: str, latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str) -> dict:
     """Gets the latest weather data for the passed latitude and longitude using api.open-meteo.com.
     The API only takes latitude and longitude with 2 decimal places.
 
@@ -72,8 +89,6 @@ def get_weather(latitude: float, longitude: float, wind_speed_unit: str, tempera
     :type wind_speed_unit: str
     :param temperature_unit: The unit of measurement for the temperature in the format needed by the API.
     :type temperature_unit: str
-
-    :returns: tuple: It contains the weather_code (a WMO Weather interpretation (WW) code that describes the current weather (1-99) (https://open-meteo.com/en/docs))
     """
     forecast_api_uri = "https://api.open-meteo.com/v1/forecast"
     params = {
@@ -86,21 +101,14 @@ def get_weather(latitude: float, longitude: float, wind_speed_unit: str, tempera
         "wind_speed_unit": wind_speed_unit,
         "temperature_unit": temperature_unit
     }
-    response = requests.get(forecast_api_uri, params=params)
+    print("Fetching Weather-API...", end="\r")
+    response = requests.get(forecast_api_uri, params=params) # https://api.open-meteo.com/v1/forecast?latitude=48.260002&longitude=11.440001&timezone=auto&forecast_days=1
     response.raise_for_status()
 
     data = response.json()
-    weather_code: int = int(data["current"]["weather_code"])
-    sunrise: str = "".join(data["daily"]["sunrise"])[-5:]
-    sunset: str = "".join(data["daily"]["sunset"])[-5:]
-    temperature: float = float(data["current"]["temperature_2m"])
-    temperature_max: float = float(data["daily"]["temperature_2m_max"][0])
-    temperature_min: float = float(data["daily"]["temperature_2m_min"][0])
-    apparent_temperature: float = float(data["current"]["apparent_temperature"])
-    wind_speed: float = float(data["current"]["wind_speed_10m"])
-    wind_direction: int = int(data["current"]["wind_direction_10m"])
-    is_day: bool = bool(data["current"]["is_day"])
-    return weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day
+    config.write_cache(city, json.dumps(data))
+    return data
+
 
 def get_weather_name(weather_code: int) -> str:
     if weather_code == 0:
@@ -430,25 +438,24 @@ def main() -> None:
     if args.city_name:
         city_name = args.city_name
 
+    if cfg.get("country_code"):
+        country_code = cfg.get("country_code")
+    if args.country_code:
+        country_code = args.country_code
 
+    if not city_name:
+        latitude, longitude, city_name = get_location_by_ip()
+    weather_data = config.load_cache(city_name)
+    print("Looking for cache...", end="\r")
+    if weather_data is None:
+        latitude, longitude, city_name = get_location_by_city_name(city_name, country_code)
 
-    if args.city_name:
-        if args.country_code:
-            latitude, longitude, city = get_location_by_city_name(args.city_name, args.country_code)
-        else:
-            latitude, longitude, city = get_location_by_city_name(args.city_name)
-    elif config.get("city_name"):
-        if config.get("country_code"):
-            latitude, longitude, city = get_location_by_city_name(config.get("city_name"), config.get("country_code"))
-        else:
-            latitude, longitude, city = get_location_by_city_name(config.get("city_name"))
-    else:
-        latitude, longitude, city = get_location_by_ip()
         # Setup units according to configuration
         api_speed_unit = get_api_speed_unit(cfg.get("speed_unit"))
         api_temperature_unit = get_api_temperature_unit(cfg.get("temperature_unit"))
 
-    weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day = get_weather(latitude, longitude, api_speed_unit, api_temperature_unit)
+        weather_data = get_weather_by_api(city_name, latitude, longitude, api_speed_unit, api_temperature_unit)
+    weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day = parse_weather(weather_data)
 
     # converting Celsius returned by api into kelvin
     if cfg.get("temperature_unit") == "°K":
@@ -486,7 +493,7 @@ def main() -> None:
 
     weather = get_weather_name(weather_code)
 
-    output(config, ascii_art, city, weather, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, date, current_time)
+    output(cfg, ascii_art, city_name, weather, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, date, current_time)
 
 
 if __name__ == "__main__":
