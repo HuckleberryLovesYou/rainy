@@ -429,7 +429,7 @@ def get_current_date(format: str):
     elif format == "DD/MM/YYYY":
         return datetime.datetime.now().strftime("%d/%m/%Y")
     elif format == "YYYY/MM/DD":
-        format = datetime.datetime.now().strftime("%Y/%m/%d")
+        return datetime.datetime.now().strftime("%Y/%m/%d")
     elif format == "YYYY-MM-DD":
         return datetime.datetime.now().strftime("%Y-%m-%d")
     elif format == "DD.MM.YYYY":
