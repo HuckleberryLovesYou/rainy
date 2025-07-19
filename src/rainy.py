@@ -17,6 +17,8 @@ def get_location_by_ip() -> tuple[float, float, str]:
     :returns: tuple: It contains the latitude on index 0, longitude on index 1 and the city on index 2
     """
     ipinfo_api_uri = "https://ipinfo.io/json"  # gets ipinfo for current ip
+
+    print("Fetching IP-Location-API...", end="\r")
     response = requests.get(ipinfo_api_uri)
     response.raise_for_status()
 
@@ -44,13 +46,14 @@ def get_location_by_city_name(city_name: str, country_code: str | None = None) -
     if country_code:
         params["countryCode"] = country_code
 
+    print("Fetching Geocoding-API...", end="\r")
     response = requests.get(geocoding_api_uri, params=params)
     response.raise_for_status()
 
     data = response.json()
     results = data.get("results")
     if not results:
-        raise ValueError(f"No results found for {city_name!r} ({country_code}).")
+        raise ValueError(f"No results found for {city_name!r} in {country_code}.")
 
     latitude_str = results[0]["latitude"]
     longitude_str = results[0]["longitude"]
@@ -219,6 +222,7 @@ def get_emoji(key: str):
     :type: key: string
     :return: An emoji that represents the key passed into it. If the key is not valid or unset, it returns an empty string.
     """
+    import emoji
     if key == "city":
         return emoji.emojize(":derelict_house:")
     elif key == "weather":
@@ -325,6 +329,7 @@ def output(config, ascii_art: list[str] | None, city: str, weather: str | None, 
         for i, (key, value) in enumerate(values.items()):
             try:
                 if config.get("use_color"):
+                    import termcolor
                     print(ascii_art[i], end="")
                     termcolor.cprint(f"{get_emoji(key) if config.get("use_emoji") is True else ""} {key.capitalize()}: {value}", f"{get_color(key)}")
                 else:
@@ -334,6 +339,7 @@ def output(config, ascii_art: list[str] | None, city: str, weather: str | None, 
     else:
         for key, value in values.items():
             if config.get("use_color"):
+                import termcolor
                 termcolor.cprint(f"{get_emoji(key) if config.get("use_emoji") is True else ""} {key.capitalize()}: {value}", f"{get_color(key)}")
             else:
                 print(f"{get_emoji(key) if config.get("use_emoji") is True else ""} {key.capitalize()}: {value}")
