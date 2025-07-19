@@ -435,7 +435,7 @@ def get_current_date(format: str):
     elif format == "DD.MM.YYYY":
         return datetime.datetime.now().strftime("%d.%m.%Y")
     else:
-        print("Invalid date format. Please use supported date format. Using default.")
+        print(f"Invalid date format '{format}'. Please use supported date format. Using default.")
         return datetime.datetime.now().strftime("%M/%D/%Y")
 
 
@@ -510,8 +510,8 @@ def main() -> None:
         sunset = sunset_time_obj.strftime("%I:%M %p")
     else:
         current_time = datetime.datetime.now().strftime("%H:%M:%S")
-            print("Invalid time format. Please use supported date format. Using default.")
         if config.get("time_format") == "24":
+            print(f"Invalid time format '{config.get("time_format")}'. Please use supported date format. Using default.")
 
     wind_direction_str = get_wind_direction(wind_direction)
 
