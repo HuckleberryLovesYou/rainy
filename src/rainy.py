@@ -1,50 +1,11 @@
 #!/usr/bin/env python3
-
-import os
 import requests
 import datetime
-import emoji
-import termcolor
 import argparse
-import configparser
+import setup
+import json
 
-def load_config():
-    parser = configparser.ConfigParser()
-    parser.read(os.path.join(os.path.dirname(__file__), "rainy.conf.ini"))
-
-    # load configuration
-    cfg = {
-        # Location
-        "city_name": parser.get("Location", "city_name"),
-        "country_code": parser.get("Location", "country_code"),
-
-        # Units
-        "temperature_unit": "°" + parser.get("Units", "temperature_unit"),
-        "speed_unit": parser.get("Units", "speed_unit"),
-
-        # Formats
-        "date_format": parser.get("Formats", "date_format"),
-        "time_format": parser.getint("Formats", "time_format"),
-
-        # What to show
-        "show_city": parser.getboolean("Show", "show_city"),
-        "show_weather": parser.getboolean("Show", "show_weather"),
-        "show_temperature": parser.getboolean("Show", "show_temperature"),
-        "show_apparent_temperature": parser.getboolean("Show", "show_apparent_temperature"),
-        "show_max_and_min_temperature": parser.getboolean("Show", "show_max_and_min_temperature"),
-        "show_wind_speed": parser.getboolean("Show", "show_wind_speed"),
-        "show_wind_direction": parser.getboolean("Show", "show_wind_direction"),
-        "show_sunrise": parser.getboolean("Show", "show_sunrise"),
-        "show_sunset": parser.getboolean("Show", "show_sunset"),
-        "show_date": parser.getboolean("Show", "show_date"),
-        "show_time": parser.getboolean("Show", "show_time"),
-
-        # Output options
-        "use_emoji": parser.getboolean("Output", "use_emoji"),
-        "use_color": parser.getboolean("Output", "use_color"),
-        "show_ascii_art": parser.getboolean("Output", "show_ascii_art"),
-    }
-    return cfg
+config = setup.Config()
 
 def get_location_by_ip() -> tuple[float, float, str]:
     """
@@ -241,7 +202,7 @@ def get_ascii_art(weather_code: int, is_day: bool = True) -> list[str]:
         ]
 
 
-def get_emoji(key: str) -> emoji:
+def get_emoji(key: str):
     """
     Gets the emoji for the passed key.
     If the key is not valid or unset, it returns an empty string.
@@ -460,12 +421,15 @@ def main() -> None:
 
     if args.country_code and not args.city_name:
         raise Exception("--country-code requires --city-name")
+    cfg = config.load_config()
 
-    config = load_config()
+    city_name = None
+    country_code = None
+    if cfg.get("city_name"):
+        city_name = cfg.get("city_name")
+    if args.city_name:
+        city_name = args.city_name
 
-    # Setup units according to configuration
-    api_speed_unit = get_api_speed_unit(config.get("speed_unit"))
-    api_temperature_unit = get_api_temperature_unit(config.get("temperature_unit"))
 
 
     if args.city_name:
@@ -480,28 +444,31 @@ def main() -> None:
             latitude, longitude, city = get_location_by_city_name(config.get("city_name"))
     else:
         latitude, longitude, city = get_location_by_ip()
+        # Setup units according to configuration
+        api_speed_unit = get_api_speed_unit(cfg.get("speed_unit"))
+        api_temperature_unit = get_api_temperature_unit(cfg.get("temperature_unit"))
 
     weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day = get_weather(latitude, longitude, api_speed_unit, api_temperature_unit)
 
     # converting Celsius returned by api into kelvin
-    if config.get("temperature_unit") == "°K":
+    if cfg.get("temperature_unit") == "°K":
         temperature = round(temperature + 273.2, 1)
         apparent_temperature = round(apparent_temperature + 273.2, 1)
         temperature_min = round(temperature_min + 273.2, 1)
         temperature_max = round(temperature_max + 273.2, 1)
 
-    wind_speed_str = f"{wind_speed} {config.get("speed_unit")}"
-    temperature_str = f"{temperature}{config.get("temperature_unit")}"
+    wind_speed_str = f"{wind_speed} {cfg.get("speed_unit")}"
+    temperature_str = f"{temperature}{cfg.get("temperature_unit")}"
 
     # adds apparent temperature to temperature output
-    if config.get("show_apparent_temperature"):
-        temperature_str += f" feels like {apparent_temperature}{config.get("temperature_unit")}"
-    if config.get("show_max_and_min_temperature"):
-        temperature_str += f" ({temperature_max}{config.get("temperature_unit")} ↑ | {temperature_min}{config.get("temperature_unit")} ↓)"
+    if cfg.get("show_apparent_temperature"):
+        temperature_str += f" feels like {apparent_temperature}{cfg.get("temperature_unit")}"
+    if cfg.get("show_max_and_min_temperature"):
+        temperature_str += f" ({temperature_max}{cfg.get("temperature_unit")} ↑ | {temperature_min}{cfg.get("temperature_unit")} ↓)"
 
-    date = get_current_date(config.get("date_format"))
+    date = get_current_date(cfg.get("date_format"))
 
-    if config.get("time_format") == "12":
+    if cfg.get("time_format") == "12":
         current_time = datetime.datetime.now().strftime("%I:%M:%S %p")
 
         sunrise_time_obj = datetime.datetime.strptime(sunrise, "%H:%M")
@@ -510,8 +477,8 @@ def main() -> None:
         sunset = sunset_time_obj.strftime("%I:%M %p")
     else:
         current_time = datetime.datetime.now().strftime("%H:%M:%S")
-        if config.get("time_format") == "24":
-            print(f"Invalid time format '{config.get("time_format")}'. Please use supported date format. Using default.")
+        if cfg.get("time_format") == "24":
+            print(f"Invalid time format '{cfg.get("time_format")}'. Please use supported date format. Using default.")
 
     wind_direction_str = get_wind_direction(wind_direction)
 
