@@ -1,7 +1,6 @@
 import configparser
 import time
 import os
-from pathlib import Path
 import json
 
 cfg_folder_name: str = r".rainy"
@@ -11,7 +10,7 @@ cache_ttl: int = 360
 
 class Config:
     def __init__(self):
-        self.abs_home_path: str = str(Path.home())
+        self.abs_home_path: str = str(os.path.expanduser("~"))
         self.abs_cfg_folder_path: str = os.path.join(self.abs_home_path, cfg_folder_name)
         self.abs_cache_file_path: str = os.path.join(self.abs_cfg_folder_path, cache_file_name)
         self.abs_cfg_file_path: str = os.path.join(self.abs_cfg_folder_path, cfg_file_name)
@@ -24,10 +23,6 @@ class Config:
         if reinit:
             self.remove_directory_tree(self.abs_cfg_folder_path)
 
-    def get_abs_cfg_folder_path(self):
-        return self.abs_cfg_folder_path
-
-    def create_cfg_folder(self):
         if os.path.exists(self.abs_cfg_folder_path):
             print(f"Configuration Folder already exists at '{self.abs_cfg_folder_path}'. Skipping creation. If this is wrong you can recreate this folder by passing --reinit to rainy.py.")
             return None
