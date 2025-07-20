@@ -20,13 +20,16 @@ class Config:
             self.create_cfg_folder()
 
 
+    def create_cfg_folder(self, reinit: bool = False):
+        if reinit:
+            self.remove_directory_tree(self.abs_cfg_folder_path)
 
     def get_abs_cfg_folder_path(self):
         return self.abs_cfg_folder_path
 
     def create_cfg_folder(self):
         if os.path.exists(self.abs_cfg_folder_path):
-            print(f"Configuration Folder already exists at '{self.abs_cfg_folder_path}'. Skipping creation. If this is wrong you can recreate this folder by passing --reinit to rainy.py.") # TODO: Implement --reinit function
+            print(f"Configuration Folder already exists at '{self.abs_cfg_folder_path}'. Skipping creation. If this is wrong you can recreate this folder by passing --reinit to rainy.py.")
             return None
 
         os.mkdir(self.abs_cfg_folder_path)
@@ -103,6 +106,19 @@ use_color = False
 show_ascii_art = True""")
         print(f"Created configuration file at '{self.abs_cfg_file_path}'.")
         return None
+
+    def remove_directory_tree(self, start_directory: str):
+        """
+        Recursively and permanently removes the specified directory, all of its
+        subdirectories, and every file contained in any of those folders.
+        """
+        for name in os.listdir(start_directory):
+            path = os.path.join(start_directory, name)
+            if os.path.isfile(path):
+                os.remove(path)
+            else:
+                self.remove_directory_tree(path)
+        os.rmdir(start_directory)
 
     def write_cache(self, city: str, cache: str):
         with open(self.abs_cache_file_path, "w") as file:

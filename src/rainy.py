@@ -389,12 +389,12 @@ def get_api_temperature_unit(unit: str) -> str:
 def create_parser() -> argparse.PARSER:
     parser = argparse.ArgumentParser(
         prog="Rainy",
-        description="Neofetch-like, minimalistic, and customizable weather-fetching tool.",
+        description="Neofetch-like, minimalistic, and customizable weather-fetching tool. Anything set using CLI-Arguments is only used for one execution of rainy. To make persistent changes edit the configuration file.",
         epilog="Example: %(prog)s --city-name Potsdam --country-code DE"
     )
     parser.add_argument("-city, --city-name", dest="city_name", help="Specify the city name to look for. For example for Potsdam the cit name would be 'Potsdam'. If not specified, looks up location by your public IP.", type=str)
     parser.add_argument("-country", "--country-code", dest="country_code", help="Specify the country code for the country to look for the specified city . A List of Country Codes can be found here: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements", type=str)
-
+    parser.add_argument("--reinit", dest="reinit", action="store_true", help="This reinitializes the configuration folder at ~/.rainy. This will also delete cache and configuration.")
     return parser
 
 
@@ -432,6 +432,10 @@ def main() -> None:
     except SystemExit:
         # Help was triggered or parsing failed
         exit()
+
+    if args.reinit:
+        config.create_cfg_folder(True)
+        return None
 
     if args.country_code and not args.city_name:
         raise Exception("--country-code requires --city-name")
