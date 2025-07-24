@@ -48,6 +48,9 @@ temperature_unit: C
 # Specify the unit of measurement for the speed of the wind. Following units are valid: mph, km/h, m/s, Knots
 speed_unit = km/h
 
+# Specify the unit of measurement for the speed of the wind. Following units are valid: mm, inch
+precipitation_unit = mm
+
 [Formats]
 # Specify the date format. Following formats are valid: MM/DD/YYYY, DD/MM/YYYY, YYYY/MM/DD, YYYY-MM-DD, DD.MM.YYYY
 date_format = DD.MM.YYYY
@@ -89,10 +92,22 @@ show_date = True
 # Shows the current time. True or False
 show_time = True
 
+# Shows the current UV index. True or False
+show_uv_index = True
+
+# Shows the current humidity. True or False
+show_humidity = True
+
+# Shows the precipitation within the next hour. True or False
+show_precipitation = True
+
+# Shows the current surface pressure in hPa. True or False
+show_surface_pressure = True
+
 
 [Output]
 # Specify if the output should contain emojis to the corresponding output line, True or False
-use_emoji = True
+use_emoji = False
 
 # Specify if the output should be colored to the corresponding output line, True or False
 use_color = False
@@ -157,6 +172,7 @@ show_ascii_art = True""")
             # Units
             "temperature_unit": "°" + parser.get("Units", "temperature_unit"),
             "speed_unit": parser.get("Units", "speed_unit"),
+            "precipitation_unit": parser.get("Units", "precipitation_unit"),
 
             # Formats
             "date_format": parser.get("Formats", "date_format"),
@@ -174,6 +190,10 @@ show_ascii_art = True""")
             "show_sunset": parser.getboolean("Show", "show_sunset"),
             "show_date": parser.getboolean("Show", "show_date"),
             "show_time": parser.getboolean("Show", "show_time"),
+            "show_uv_index": parser.getboolean("Show", "show_uv_index"),
+            "show_humidity": parser.getboolean("Show", "show_humidity"),
+            "show_precipitation": parser.getboolean("Show", "show_precipitation"),
+            "show_surface_pressure": parser.getboolean("Show", "show_surface_pressure"),
 
             # Output options
             "use_emoji": parser.getboolean("Output", "use_emoji"),

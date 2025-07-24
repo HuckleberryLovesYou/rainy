@@ -84,7 +84,7 @@ def parse_weather(data: dict) -> tuple[int, str, str, float, float, float, float
     surface_pressure: int = int(data["current"]["surface_pressure"])
     return weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure
 
-def get_weather_by_api(city: str, latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str) -> dict:
+def get_weather_by_api(city: str, latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str, precipitation_unit: str) -> dict:
     """Gets the latest weather data for the passed latitude and longitude using api.open-meteo.com.
     The API only takes latitude and longitude with 2 decimal places.
 
@@ -96,6 +96,8 @@ def get_weather_by_api(city: str, latitude: float, longitude: float, wind_speed_
     :type wind_speed_unit: str
     :param temperature_unit: The unit of measurement for the temperature in the format needed by the API.
     :type temperature_unit: str
+    :param precipitation_unit: The unit of measurement for the height of the precipitation in the format needed by the API.
+    :type precipitation_unit: str
     """
     forecast_api_uri = "https://api.open-meteo.com/v1/forecast"
     params = {
@@ -106,7 +108,8 @@ def get_weather_by_api(city: str, latitude: float, longitude: float, wind_speed_
         "timezone": "auto",
         "forecast_days": 1,
         "wind_speed_unit": wind_speed_unit,
-        "temperature_unit": temperature_unit
+        "temperature_unit": temperature_unit,
+        "precipitation_unit": precipitation_unit
     }
     print("Fetching Weather-API...", end="\r")
     response = requests.get(forecast_api_uri, params=params) # https://api.open-meteo.com/v1/forecast?latitude=48.260002&longitude=11.440001&timezone=auto&forecast_days=1
@@ -282,7 +285,7 @@ def get_color(key: str) -> str:
         return "white"
 
 
-def output(config, ascii_art: list[str] | None, city: str, weather: str | None, temperature_str: str, wind_speed_str: str, wind_direction_str: str | None, sunrise: str, sunset: str, current_date: str | None, current_time: str) -> None:
+def output(config, ascii_art: list[str] | None, city: str, weather: str | None, temperature_str: str, wind_speed_str: str, wind_direction_str: str | None, sunrise: str, sunset: str, current_date: str | None, current_time: str, uv_index, humidity_str, precipitation_str, surface_pressure_str) -> None:
     """
     Prints the output of rainy to the terminal. It can take any amount of parameters. If no parameter is passed, the output will only be the ascii art of the current weather.
     If the amount of lines needed to display the passed parameters, it will expand the ascii art with blank lines in the same amount of characters and add the value behind it.
@@ -330,6 +333,14 @@ def output(config, ascii_art: list[str] | None, city: str, weather: str | None, 
         values["date"] = current_date
     if config.get("show_time"):
         values["time"] = current_time
+    if config.get("show_uv_index"):
+        values["uv index"] = uv_index
+    if config.get("show_humidity"):
+        values["humidity"] = humidity_str
+    if config.get("show_precipitation"):
+        values["precipitation"] = precipitation_str
+    if config.get("show_surface_pressure"):
+        values["surface pressure"] = surface_pressure_str
 
     if config.get("show_ascii_art"):
         len_diff = len(values) - len(ascii_art)
@@ -342,9 +353,9 @@ def output(config, ascii_art: list[str] | None, city: str, weather: str | None, 
                 if config.get("use_color"):
                     import termcolor
                     print(ascii_art[i], end="")
-                    termcolor.cprint(f"{get_emoji(key) if config.get("use_emoji") is True else ""} {key.capitalize()}: {value}", f"{get_color(key)}")
+                    termcolor.cprint(f"{get_emoji(key) if config.get("use_emoji") is True else "○ "} {key.capitalize()}: {value}", f"{get_color(key)}")
                 else:
-                    print(f"{ascii_art[i]}{get_emoji(key) if config.get("use_emoji") is True else ""} {key.capitalize()}: {value}")
+                    print(f"{ascii_art[i]}{get_emoji(key) if config.get("use_emoji") is True else "○ "} {key.capitalize()}: {value}")
             except IndexError:
                 print(ascii_art[i])
     else:
@@ -395,6 +406,21 @@ def get_api_temperature_unit(unit: str) -> str:
     else:
         print("Invalid temperature unit. Please use supported unit. Using default.")
         return "celsius"
+
+def get_api_precipitation_unit(unit: str) -> str:
+    """
+    Convert any precipitation unit into the API representation for the API Call.
+    If an invalid unit is requested, it will return the default unit.
+    Default: "mm" (Millimeters)
+    :param unit: This is the precipitation unit to get the API representation for.
+    :type unit: str
+    :return: API representation of the requested unit
+    """
+    if unit == "mm" or unit == "inch":
+        return unit
+    else:
+        print("Invalid temperature unit. Please use supported unit. Using default.")
+        return "mm"
 
 
 def create_parser() -> argparse.PARSER:
@@ -474,8 +500,9 @@ def main() -> None:
         # Setup units according to configuration
         api_speed_unit = get_api_speed_unit(cfg.get("speed_unit"))
         api_temperature_unit = get_api_temperature_unit(cfg.get("temperature_unit"))
+        api_precipitation_unit = get_api_precipitation_unit(cfg.get("precipitation_unit"))
 
-        weather_data = get_weather_by_api(city_name, latitude, longitude, api_speed_unit, api_temperature_unit)
+        weather_data = get_weather_by_api(city_name, latitude, longitude, api_speed_unit, api_temperature_unit, api_precipitation_unit)
     weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure = parse_weather(weather_data)
 
     # converting Celsius returned by api into kelvin
@@ -508,16 +535,16 @@ def main() -> None:
         if cfg.get("time_format") == "24":
             print(f"Invalid time format '{cfg.get("time_format")}'. Please use supported date format. Using default.")
 
-    humidity = str(humidity) + " %"
-    precipitation = str(precipitation) + str(cfg.get("time_format"))
-
+    humidity_str = str(humidity) + " %"
+    precipitation_str = str(precipitation) + f" {cfg.get("precipitation_unit")} →1h"
+    surface_pressure_str = str(surface_pressure) + " hPa"
     wind_direction_str = get_wind_direction(wind_direction)
 
     ascii_art = get_ascii_art(weather_code, is_day)
 
     weather = get_weather_name(weather_code)
 
-    output(cfg, ascii_art, city_name, weather, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, date, current_time, uv_index, humidity, precipitation, surface_pressure)
+    output(cfg, ascii_art, city_name, weather, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, date, current_time, uv_index, humidity_str, precipitation_str, surface_pressure_str)
     return None
 
 
