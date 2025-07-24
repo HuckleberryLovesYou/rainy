@@ -1,12 +1,14 @@
 # Rainy 🌦️
 
 Neofetch-like, minimalistic, and customizable weather-fetching cli tool for your current location on Linux and Windows.
+
 ## Showcase
-#### Linux
+
+*Linux*
 
 <img src="assets/preview_linux.png">
 
-#### Windows
+*Windows*
 
 <img src="assets/preview_windows.png">
 
@@ -69,45 +71,6 @@ Reopen any terminals you have currently opened, and then type `rainy` in your te
 
 * You can edit the config at the **top** of `/usr/local/bin/rainy` (or .\rainy\src\rainy.py on windows) and set unit of measurements, date formats.
 * You can also set to show city name or/and the current date and time if you want to.
-
-#### temperature_unit
-
-Here you can specify what unit of measurement you would like to use for the temperature.
-You can choose between °C (Celsius), °F (Fahrenheit) and °K (Kelvin).
-Every temperature is rounded to one decimal place.
-Default: °C
-
-#### wind_speed_unit
-
-Here you can specify what unit of measurement you would like to use for the speed of wind.
-You can choose between mph (Miles per Hour), km/h (Kilometre per Hour), m/s (Meter per Second) and Knots.
-Every wind speed is rounded to one decimal place.
-Default: km/h
-
-#### show_city
-
-This enables or disables the display of the city that was fetched by your location using your public IP Address.
-If you use a VPN Rainy will not get the weather for the right location, but rather get the weather at the location of your VPN exit node.
-Default: True
-
-#### show_date
-
-This enables or disables the display of the current date.
-The format of the display date can be changed at `date_format`.
-Default: True
-
-#### date_format
-
-Here you can specify the format of the current date you would like to use.
-You can choose between MM/DD/YYYY, DD/MM/YYYY, YYYY/MM/DD, YYYY-MM-DD and DD.MM.YYYY.
-This has no effect if show_date is False.
-Default: DD.MM.YYYY
-
-#### show_time
-
-This enables or disables the display of the current time.
-Currently, there is no way of changing the format of the time.
-Default: True
 
 ## Update
 
