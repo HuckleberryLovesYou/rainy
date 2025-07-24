@@ -226,25 +226,32 @@ def get_emoji(key: str):
     :type: key: string
     :return: An emoji that represents the key passed into it. If the key is not valid or unset, it returns an empty string.
     """
-    import emoji
     if key == "city":
-        return emoji.emojize(":derelict_house:")
+        return "\U0001F3E0"
     elif key == "weather":
-        return emoji.emojize(":sun_behind_rain_cloud:")
+        return "\U000026C5"
     elif key == "temperature":
-        return emoji.emojize(":thermometer:")
+        return "\U0001F321"
     elif key == "wind speed":
-        return emoji.emojize(":dashing_away:")
+        return "\U0001F4A8"
     elif key == "wind direction":
-        return emoji.emojize(":compass:")
+        return "\U0001F9ED"
     elif key == "sunrise":
-        return emoji.emojize(":sunrise:")
+        return "\U0001F305"
     elif key == "sunset":
-        return emoji.emojize(":sunset:")
+        return "\U0001F307"
     elif key == "date":
-        return emoji.emojize(":calendar:")
+        return "\U0001F4C5"
     elif key == "time":
-        return emoji.emojize(":alarm_clock:")
+        return "\U000023F0"
+    elif key == "precipitation":
+        return "\U0001F327"
+    elif key == "surface pressure":
+        return "\U0001F39A"
+    elif key == "humidity":
+        return "\U0001F4A7"
+    elif key == "uv index":
+        return "\U00002600"
     else:
         return ""
 

@@ -14,7 +14,6 @@ Neofetch-like, minimalistic, and customizable weather-fetching cli tool for your
 
 * `python`
 * `python3-requests`
-* `python3-emoji`
 * `python3-termcolor`
 * `make`
 
