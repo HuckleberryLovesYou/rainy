@@ -46,7 +46,7 @@ To install rainy run the following command:
 git clone https://github.com/HuckleberryLovesYou/rainy.git && cd ./rainy && sudo make install && rainy
 ```
 
-To configure, edit the Config-File at `/usr/local/bin/rainy.conf.ini`.
+To configure, edit the Config-File at `~/.rainy/config.ini`.
 After this you can just type `rainy` to execute it.
 To uninstall rainy, you can run `make uninstall` in the cloned repository.
 
