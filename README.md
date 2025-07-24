@@ -16,7 +16,6 @@ Neofetch-like, minimalistic, and customizable weather-fetching cli tool for your
 
 * `python`
 * `python3-requests`
-* `python3-termcolor`
 * `make`
 
 You can install all of them from your distribution repositories using your package manager supplied by your distribution.
@@ -24,7 +23,7 @@ You can install all of them from your distribution repositories using your packa
 #### 🐧 Debian/Ubuntu
 
 ```bash
-sudo apt update -y && sudo apt install -y python3 python3-requests python3-emoji python3-termcolor make
+sudo apt update -y && sudo apt install -y python3 python3-requests make
 ```
 
 #### Windows

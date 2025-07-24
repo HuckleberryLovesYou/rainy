@@ -258,32 +258,6 @@ def get_emoji(key: str):
     else:
         return ""
 
-def get_color(key: str) -> str:
-    """
-    Gets the color for the passed key.
-    If the key is not valid or unset, it returns the color 'white'.
-
-    :param key: A key of an entry in the dictionary 'values'
-    :type: key: string
-    :return: A string containing the color for the termcolor output depending on the passed key. If the key is not valid or unset, it returns the color 'white'.
-    """
-    if key == "city":
-        return "blue"
-    elif key == "weather":
-        return "cyan"
-    elif key == "temperature":
-        return "red"
-    elif key == "wind speed":
-        return "green"
-    elif key == "wind direction":
-        return "yellow"
-    elif key == "sunrise":
-        return "magenta"
-    elif key == "sunset":
-        return "magenta"
-    else:
-        return "white"
-
 
 def output(config, ascii_art: list[str] | None, city: str, weather: str | None, temperature_str: str, wind_speed_str: str, wind_direction_str: str | None, sunrise: str, sunset: str, current_date: str | None, current_time: str, uv_index, humidity_str, precipitation_str, surface_pressure_str) -> None:
     """
@@ -350,21 +324,12 @@ def output(config, ascii_art: list[str] | None, city: str, weather: str | None, 
 
         for i, (key, value) in enumerate(values.items()):
             try:
-                if config.get("use_color"):
-                    import termcolor
-                    print(ascii_art[i], end="")
-                    termcolor.cprint(f"{get_emoji(key) if config.get("use_emoji") is True else "○ "} {key.capitalize()}: {value}", f"{get_color(key)}")
-                else:
-                    print(f"{ascii_art[i]}{get_emoji(key) if config.get("use_emoji") is True else "○ "} {key.capitalize()}: {value}")
+                print(f"{ascii_art[i]}{get_emoji(key) if config.get("use_emoji") is True else "○ "} {key.capitalize()}: {value}")
             except IndexError:
                 print(ascii_art[i])
     else:
         for key, value in values.items():
-            if config.get("use_color"):
-                import termcolor
-                termcolor.cprint(f"{get_emoji(key) if config.get("use_emoji") is True else ""} {key.capitalize()}: {value}", f"{get_color(key)}")
-            else:
-                print(f"{get_emoji(key) if config.get("use_emoji") is True else ""} {key.capitalize()}: {value}")
+            print(f"{get_emoji(key) if config.get("use_emoji") is True else ""} {key.capitalize()}: {value}")
 
 def get_api_speed_unit(unit: str) -> str:
     """

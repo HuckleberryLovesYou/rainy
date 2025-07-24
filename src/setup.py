@@ -109,9 +109,6 @@ show_surface_pressure = True
 # Specify if the output should contain emojis to the corresponding output line, True or False
 use_emoji = False
 
-# Specify if the output should be colored to the corresponding output line, True or False
-use_color = False
-
 # Specify if the output should contain the ASCII-Art of the corresponding weather, True or False
 show_ascii_art = True""")
         print(f"Created configuration file at '{self.abs_cfg_file_path}'.")
@@ -197,7 +194,6 @@ show_ascii_art = True""")
 
             # Output options
             "use_emoji": parser.getboolean("Output", "use_emoji"),
-            "use_color": parser.getboolean("Output", "use_color"),
             "show_ascii_art": parser.getboolean("Output", "show_ascii_art"),
         }
         return cfg
