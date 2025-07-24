@@ -51,20 +51,9 @@ To uninstall rainy, you can run `make uninstall` in the cloned repository.
 
 ### Windows
 
-If you don't want to be able to configure rainy, you can download the latest executable from the GitHub releases and add it to your PATH environment variable.
+Download the latest executable from the GitHub releases and add it to your PATH environment variable like shown [here](https://stackoverflow.com/a/44272417/27739226).
 Now, reopen any terminals you have currently opened, and type `rainy` in your terminal.
-
-If you want to **configure** it, you will have to clone the Repository:
-
-```powershell
-git clone https://github.com/HuckleberryLovesYou/rainy.git
-cd .\rainy
-py.exe -m pip install -r .\requirements.txt
-```
-
-Now, add the folder called `rainy`, in which the `rainy.bat` file is located to your PATH environment variable like shown [here](https://stackoverflow.com/a/44272417/27739226).
-To configure rainy, edit the Configuration at `.\rainy\src\rainy.conf.ini`.
-Reopen any terminals you have currently opened, and then type `rainy` in your terminal to execute it.
+To configure rainy, edit the Configuration at `$HOME\.rainy\config.ini`.
 
 ## Configuration
 
@@ -75,10 +64,11 @@ Reopen any terminals you have currently opened, and then type `rainy` in your te
 
 What if there's an update?
 You can just update your local repository with running `git pull` in the cloned folder. After that run `sudo make install`.
+If the configuration changed due to the update, you will have to reinit rainy using --reinit. Make sure to back up your existing configuration
 
 ### Fork
 
 This is a fork of a smaller project by [Rainy by loefey](https://github.com/loefey/rainy).
-Upstream is unmaintained. He has rewritten and upgraded it in Rust, creating [Thundery](https://github.com/loefey/thundery).
+The maintainer has rewritten and upgraded it in Rust, creating [Thundery](https://github.com/loefey/thundery).
 
 Icon used for executable in releases: https://www.flaticon.com/free-icons/rain
