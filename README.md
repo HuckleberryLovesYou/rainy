@@ -51,7 +51,7 @@ To uninstall rainy, you can run `make uninstall` in the cloned repository.
 
 ### Windows
 
-Download the latest executable from the GitHub releases and add it to your PATH environment variable like shown [here](https://stackoverflow.com/a/44272417/27739226).
+Download the [latest executable](https://github.com/HuckleberryLovesYou/rainy/releases/latest) from the GitHub releases and add it to your PATH environment variable like shown [here](https://stackoverflow.com/a/44272417/27739226).
 Now, reopen any terminals you have currently opened, and type `rainy` in your terminal.
 To configure rainy, edit the Configuration at `$HOME\.rainy\config.ini`.
 
