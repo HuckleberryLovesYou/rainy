@@ -62,7 +62,7 @@ def get_location_by_city_name(city_name: str, country_code: str | None = None) -
 
     return latitude, longitude, results[0]["name"]
 
-def parse_weather(data: dict) -> tuple[int, str, str, float, float, float, float, float, int, bool]:
+def parse_weather(data: dict) -> tuple[int, str, str, float, float, float, float, float, int, bool, float, int, float, int]:
     """
     :param data:
     :return: tuple: It contains the weather_code (a WMO Weather interpretation (WW) code that describes the current weather (1-99) (https://open-meteo.com/en/docs))
@@ -75,10 +75,14 @@ def parse_weather(data: dict) -> tuple[int, str, str, float, float, float, float
     temperature_max: float = float(data["daily"]["temperature_2m_max"][0])
     temperature_min: float = float(data["daily"]["temperature_2m_min"][0])
     apparent_temperature: float = float(data["current"]["apparent_temperature"])
+    uv_index: float = float(data["daily"]["uv_index_max"][0])
     wind_speed: float = float(data["current"]["wind_speed_10m"])
     wind_direction: int = int(data["current"]["wind_direction_10m"])
     is_day: bool = bool(data["current"]["is_day"])
-    return weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day
+    humidity: int = int(data["current"]["relative_humidity_2m"])
+    precipitation: float = float(data["current"]["precipitation"])
+    surface_pressure: int = int(data["current"]["surface_pressure"])
+    return weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure
 
 def get_weather_by_api(city: str, latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str) -> dict:
     """Gets the latest weather data for the passed latitude and longitude using api.open-meteo.com.
@@ -97,8 +101,8 @@ def get_weather_by_api(city: str, latitude: float, longitude: float, wind_speed_
     params = {
         "latitude": latitude,
         "longitude": longitude,
-        "daily": "sunrise,sunset,temperature_2m_max,temperature_2m_min",
-        "current": "temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,is_day",
+        "daily": "sunrise,sunset,temperature_2m_max,temperature_2m_min,uv_index_max",
+        "current": "temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,is_day,relative_humidity_2m,precipitation,surface_pressure",
         "timezone": "auto",
         "forecast_days": 1,
         "wind_speed_unit": wind_speed_unit,
@@ -465,7 +469,7 @@ def main() -> None:
         api_temperature_unit = get_api_temperature_unit(cfg.get("temperature_unit"))
 
         weather_data = get_weather_by_api(city_name, latitude, longitude, api_speed_unit, api_temperature_unit)
-    weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day = parse_weather(weather_data)
+    weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure = parse_weather(weather_data)
 
     # converting Celsius returned by api into kelvin
     if cfg.get("temperature_unit") == "°K":
@@ -497,13 +501,17 @@ def main() -> None:
         if cfg.get("time_format") == "24":
             print(f"Invalid time format '{cfg.get("time_format")}'. Please use supported date format. Using default.")
 
+    humidity = str(humidity) + " %"
+    precipitation = str(precipitation) + str(cfg.get("time_format"))
+
     wind_direction_str = get_wind_direction(wind_direction)
 
     ascii_art = get_ascii_art(weather_code, is_day)
 
     weather = get_weather_name(weather_code)
 
-    output(cfg, ascii_art, city_name, weather, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, date, current_time)
+    output(cfg, ascii_art, city_name, weather, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, date, current_time, uv_index, humidity, precipitation, surface_pressure)
+    return None
 
 
 if __name__ == "__main__":
