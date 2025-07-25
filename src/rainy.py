@@ -84,7 +84,7 @@ def parse_weather(data: dict) -> tuple[int, str, str, float, float, float, float
     surface_pressure: int = int(data["current"]["surface_pressure"])
     return weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure
 
-def get_weather_by_api(city: str, latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str, precipitation_unit: str) -> dict:
+def get_weather_by_api(latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str, precipitation_unit: str) -> dict:
     """Gets the latest weather data for the passed latitude and longitude using api.open-meteo.com.
     The API only takes latitude and longitude with 2 decimal places.
 
@@ -116,7 +116,6 @@ def get_weather_by_api(city: str, latitude: float, longitude: float, wind_speed_
     response.raise_for_status()
 
     data = response.json()
-    config.write_cache(city, json.dumps(data))
     return data
 
 
@@ -467,7 +466,8 @@ def main() -> None:
         api_temperature_unit = get_api_temperature_unit(cfg.get("temperature_unit"))
         api_precipitation_unit = get_api_precipitation_unit(cfg.get("precipitation_unit"))
 
-        weather_data = get_weather_by_api(city_name, latitude, longitude, api_speed_unit, api_temperature_unit, api_precipitation_unit)
+        weather_data = get_weather_by_api(latitude, longitude, api_speed_unit, api_temperature_unit, api_precipitation_unit)
+        config.write_cache(city_name, json.dumps(weather_data))
     weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure = parse_weather(weather_data)
 
     # converting Celsius returned by api into kelvin
@@ -507,9 +507,9 @@ def main() -> None:
 
     ascii_art = get_ascii_art(weather_code, is_day)
 
-    weather = get_weather_name(weather_code)
+    weather_name = get_weather_name(weather_code)
 
-    output(cfg, ascii_art, city_name, weather, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, date, current_time, uv_index, humidity_str, precipitation_str, surface_pressure_str)
+    output(cfg, ascii_art, city_name, weather_name, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, date, current_time, uv_index, humidity_str, precipitation_str, surface_pressure_str)
     return None
 
 
