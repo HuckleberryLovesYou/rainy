@@ -110,6 +110,9 @@ show_precipitation = True
 # Shows the current surface pressure in hPa. True or False
 show_surface_pressure = True
 
+# Show the U.S. AQI (Air Quality Index), True or False
+show_air_quality = True
+
 
 [Output]
 # Specify if the output should contain emojis to the corresponding output line, True or False
@@ -225,6 +228,7 @@ max_cache_file_count = 10""")
             "show_humidity": parser.getboolean("Show", "show_humidity"),
             "show_precipitation": parser.getboolean("Show", "show_precipitation"),
             "show_surface_pressure": parser.getboolean("Show", "show_surface_pressure"),
+            "show_air_quality": parser.getboolean("Show", "show_air_quality"),
 
             # Output options
             "use_emoji": parser.getboolean("Output", "use_emoji"),

@@ -62,7 +62,7 @@ def get_location_by_city_name(city_name: str, country_code: str | None = None) -
 
     return latitude, longitude, results[0]["name"]
 
-def parse_weather(data: dict) -> tuple[int, str, str, float, float, float, float, float, int, bool, float, int, float, int]:
+def parse_weather(data: dict) -> tuple[int, str, str, float, float, float, float, float, int, bool, float, int, float, int, int]:
     """
     :param data:
     :return: tuple: It contains the weather_code (a WMO Weather interpretation (WW) code that describes the current weather (1-99) (https://open-meteo.com/en/docs))
@@ -82,11 +82,15 @@ def parse_weather(data: dict) -> tuple[int, str, str, float, float, float, float
     humidity: int = int(data["current"]["relative_humidity_2m"])
     precipitation: float = float(data["current"]["precipitation"])
     surface_pressure: int = int(data["current"]["surface_pressure"])
-    return weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure
+    try:
+        air_quality_index = int(data["current"]["us_aqi"])
+    except KeyError:
+        air_quality_index = None # Air Quality not requested.
+    return weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure, air_quality_index
 
 def get_weather_by_api(latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str, precipitation_unit: str) -> dict:
     """Gets the latest weather data for the passed latitude and longitude using api.open-meteo.com.
-    The API only takes latitude and longitude with 2 decimal places.
+    The API only takes latitude and longitude with 2 decimal places. The API can, but doesn't need to, take an API-Key.
 
     :param latitude: The latitude rounded to 2 decimal places.
     :type latitude: float
@@ -99,7 +103,7 @@ def get_weather_by_api(latitude: float, longitude: float, wind_speed_unit: str, 
     :param precipitation_unit: The unit of measurement for the height of the precipitation in the format needed by the API.
     :type precipitation_unit: str
     """
-    forecast_api_uri = "https://api.open-meteo.com/v1/forecast"
+    weather_api_uri = r"https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": latitude,
         "longitude": longitude,
@@ -112,11 +116,32 @@ def get_weather_by_api(latitude: float, longitude: float, wind_speed_unit: str, 
         "precipitation_unit": precipitation_unit
     }
     print("Fetching Weather-API...", end="\r")
-    response = requests.get(forecast_api_uri, params=params) # https://api.open-meteo.com/v1/forecast?latitude=48.260002&longitude=11.440001&timezone=auto&forecast_days=1
-    response.raise_for_status()
+    weather_api_response = requests.get(weather_api_uri, params=params) # https://api.open-meteo.com/v1/forecast?latitude=37.335480&longitude=-121.893028&timezone=auto&forecast_days=1
+    weather_api_response.raise_for_status()
+    return weather_api_response.json()
 
-    data = response.json()
-    return data
+
+def get_air_quality_index_by_api(latitude: float, longitude: float) -> int:
+    """Gets the Air Quality data for the passed latitude and longitude using air-quality-api.open-meteo.com.
+    The API only takes latitude and longitude with 2 decimal places. The API can, but doesn't need to, take an API-Key.
+
+    :param latitude: The latitude rounded to 2 decimal places.
+    :type latitude: float
+    :param longitude: The longitude rounded to 2 decimal places.
+    :type longitude: float
+    """
+    air_quality_api_uri = r"https://air-quality-api.open-meteo.com/v1/air-quality"
+    air_quality_api_params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "current": "us_aqi",
+        "timezone": "auto",
+        "forecast_days": 1,
+    }
+    print("Fetching Air Quality-API...", end="\r")
+    air_quality_api_response = requests.get(air_quality_api_uri, params=air_quality_api_params)  # https://air-quality-api.open-meteo.com/v1/air-quality?latitude=37.335480&longitude=-121.893028&current=us_aqi&timezone=auto&forecast_days=1
+    air_quality_api_response.raise_for_status()
+    return int(air_quality_api_response.json()["current"]["us_aqi"])
 
 
 def get_weather_name(weather_code: int) -> str:
@@ -258,7 +283,7 @@ def get_emoji(key: str):
         return ""
 
 
-def output(config, ascii_art: list[str] | None, city: str, weather: str | None, temperature_str: str, wind_speed_str: str, wind_direction_str: str | None, sunrise: str, sunset: str, current_date: str | None, current_time: str, uv_index, humidity_str, precipitation_str, surface_pressure_str) -> None:
+def output(config, ascii_art: list[str] | None, city: str, weather: str | None, temperature_str: str, wind_speed_str: str, wind_direction_str: str | None, sunrise: str, sunset: str, current_date: str | None, current_time: str, uv_index, humidity_str, precipitation_str, surface_pressure_str, air_quality_index: int | None) -> None:
     """
     Prints the output of rainy to the terminal. It can take any amount of parameters. If no parameter is passed, the output will only be the ascii art of the current weather.
     If the amount of lines needed to display the passed parameters, it will expand the ascii art with blank lines in the same amount of characters and add the value behind it.
@@ -314,6 +339,8 @@ def output(config, ascii_art: list[str] | None, city: str, weather: str | None, 
         values["precipitation"] = precipitation_str
     if config.get("show_surface_pressure"):
         values["surface pressure"] = surface_pressure_str
+    if config.get("show_air_quality"):
+        values["air quality index"] = air_quality_index
 
     if config.get("show_ascii_art"):
         len_diff = len(values) - len(ascii_art)
@@ -467,8 +494,11 @@ def main() -> None:
         api_precipitation_unit = get_api_precipitation_unit(cfg.get("precipitation_unit"))
 
         weather_data = get_weather_by_api(latitude, longitude, api_speed_unit, api_temperature_unit, api_precipitation_unit)
+        if cfg.get("show_air_quality"):
+            weather_data_air_quality_index = get_air_quality_index_by_api(latitude, longitude)
+            weather_data["current"].update({"us_aqi": weather_data_air_quality_index})
         config.write_cache(city_name, json.dumps(weather_data))
-    weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure = parse_weather(weather_data)
+    weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure, air_quality_index = parse_weather(weather_data)
 
     # converting Celsius returned by api into kelvin
     if cfg.get("temperature_unit") == "°K":
@@ -509,7 +539,7 @@ def main() -> None:
 
     weather_name = get_weather_name(weather_code)
 
-    output(cfg, ascii_art, city_name, weather_name, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, date, current_time, uv_index, humidity_str, precipitation_str, surface_pressure_str)
+    output(cfg, ascii_art, city_name, weather_name, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, date, current_time, uv_index, humidity_str, precipitation_str, surface_pressure_str, air_quality_index)
     return None
 
 
