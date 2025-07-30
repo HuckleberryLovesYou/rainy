@@ -423,6 +423,7 @@ def create_parser() -> argparse.PARSER:
     parser.add_argument("-city, --city-name", dest="city_name", help="Specify the city name to look for. For example for Potsdam the cit name would be 'Potsdam'. If not specified, looks up location by your public IP.", type=str)
     parser.add_argument("-country", "--country-code", dest="country_code", help="Specify the country code for the country to look for the specified city . A List of Country Codes can be found here: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements", type=str)
     parser.add_argument("--reinit", dest="reinit", action="store_true", help="This reinitializes the configuration folder at ~/.rainy. This will also delete cache and configuration.")
+    parser.add_argument("--bypass-cache", dest="bypass_cache", action="store_true", help="This allows you to bypass the cache stored at ~/.rainy/cache.")
     return parser
 
 
@@ -484,8 +485,12 @@ def main() -> None:
 
     if not city_name:
         latitude, longitude, city_name = get_location_by_ip()
-    weather_data = config.load_cache(city_name)
-    print("Looking for cache...", end="\r")
+
+    weather_data = None
+    if not args.bypass_cache:
+        weather_data = config.load_cache(city_name)
+        print("Looking for cache...", end="\r")
+
     if weather_data is None:
         latitude, longitude, city_name = get_location_by_city_name(city_name, country_code)
 
