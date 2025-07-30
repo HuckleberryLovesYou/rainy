@@ -454,6 +454,21 @@ def get_wind_direction(wind_direction: int) -> str:
     else:
         return "West"
 
+def get_air_quality_index_concern(air_quality_index: int) -> str:
+    if air_quality_index <= 50:
+        return "Good"
+    elif air_quality_index <= 100:
+        return "Moderate"
+    elif air_quality_index <= 150:
+        return "Unhealthy for Sensitive Groups"
+    elif air_quality_index <= 200:
+        return "Unhealthy"
+    elif air_quality_index <= 300:
+        return "Very Unhealthy"
+    elif air_quality_index > 300:
+        return "Hazardous"
+
+
 def main() -> None:
     # parse CLI arguments
     parser = create_parser()
@@ -540,13 +555,14 @@ def main() -> None:
     humidity_str = str(humidity) + " %"
     precipitation_str = str(precipitation) + f" {cfg.get("precipitation_unit")} →1h"
     surface_pressure_str = str(surface_pressure) + " hPa"
-    wind_direction_str = get_wind_direction(wind_direction)
+    wind_direction_str = get_wind_direction(wind_direction) + f" ({wind_direction}°)"
+    air_quality_index_str = get_air_quality_index_concern(air_quality_index) + f" ({air_quality_index})"
 
     ascii_art = get_ascii_art(weather_code, is_day)
 
     weather_name = get_weather_name(weather_code)
 
-    output(cfg, ascii_art, city_name, weather_name, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, date, current_time, uv_index, humidity_str, precipitation_str, surface_pressure_str, air_quality_index)
+    output(cfg, ascii_art, city_name, weather_name, temperature_str, wind_speed_str, wind_direction_str, sunrise, sunset, date, current_time, uv_index, humidity_str, precipitation_str, surface_pressure_str, air_quality_index_str)
     return None
 
 
