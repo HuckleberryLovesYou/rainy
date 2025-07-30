@@ -67,7 +67,7 @@ def parse_weather(data: dict) -> tuple[int, str, str, float, float, float, float
     :param data:
     :return: tuple: It contains the weather_code (a WMO Weather interpretation (WW) code that describes the current weather (1-99) (https://open-meteo.com/en/docs))
     """
-
+    utc_offset_seconds: int = int(data["utc_offset_seconds"])
     weather_code: int = int(data["current"]["weather_code"])
     sunrise: str = "".join(data["daily"]["sunrise"])[-5:]
     sunset: str = "".join(data["daily"]["sunset"])[-5:]
@@ -86,7 +86,7 @@ def parse_weather(data: dict) -> tuple[int, str, str, float, float, float, float
         air_quality_index = int(data["current"]["us_aqi"])
     except KeyError:
         air_quality_index = None # Air Quality not requested.
-    return weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure, air_quality_index
+    return utc_offset_seconds, weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure, air_quality_index
 
 def get_weather_by_api(latitude: float, longitude: float, wind_speed_unit: str, temperature_unit: str, precipitation_unit: str) -> dict:
     """Gets the latest weather data for the passed latitude and longitude using api.open-meteo.com.
@@ -346,7 +346,7 @@ def output(config, ascii_art: list[str] | None, city: str, weather: str | None, 
         len_diff = len(values) - len(ascii_art)
         if len_diff > 0:
             for _ in range(len_diff):
-                ascii_art.append(" " * len(ascii_art[0]))
+                ascii_art.append(" " * 17)
 
         for i, (key, value) in enumerate(values.items()):
             try:
@@ -426,20 +426,21 @@ def create_parser() -> argparse.PARSER:
     return parser
 
 
-def get_current_date(format: str):
+def get_current_date(utc_offset_seconds: int, format: str) -> str:
+    time_at_location = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=utc_offset_seconds)
     if format == "MM/DD/YYYY":
-        return datetime.datetime.now().strftime("%m/%d/%Y")
+        return time_at_location.strftime("%m/%d/%Y")
     elif format == "DD/MM/YYYY":
-        return datetime.datetime.now().strftime("%d/%m/%Y")
+        return time_at_location.strftime("%d/%m/%Y")
     elif format == "YYYY/MM/DD":
-        return datetime.datetime.now().strftime("%Y/%m/%d")
+        return time_at_location.strftime("%Y/%m/%d")
     elif format == "YYYY-MM-DD":
-        return datetime.datetime.now().strftime("%Y-%m-%d")
+        return time_at_location.strftime("%Y-%m-%d")
     elif format == "DD.MM.YYYY":
-        return datetime.datetime.now().strftime("%d.%m.%Y")
+        return time_at_location.strftime("%d.%m.%Y")
     else:
         print(f"Invalid date format '{format}'. Please use supported date format. Using default.")
-        return datetime.datetime.now().strftime("%M/%D/%Y")
+        return time_at_location.strftime("%M/%D/%Y")
 
 
 def get_wind_direction(wind_direction: int) -> str:
@@ -498,7 +499,7 @@ def main() -> None:
             weather_data_air_quality_index = get_air_quality_index_by_api(latitude, longitude)
             weather_data["current"].update({"us_aqi": weather_data_air_quality_index})
         config.write_cache(city_name, json.dumps(weather_data))
-    weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure, air_quality_index = parse_weather(weather_data)
+    utc_offset_seconds, weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure, air_quality_index = parse_weather(weather_data)
 
     # converting Celsius returned by api into kelvin
     if cfg.get("temperature_unit") == "°K":
@@ -516,17 +517,18 @@ def main() -> None:
     if cfg.get("show_max_and_min_temperature"):
         temperature_str += f" ({temperature_max}{cfg.get("temperature_unit")} ↑ | {temperature_min}{cfg.get("temperature_unit")} ↓)"
 
-    date = get_current_date(cfg.get("date_format"))
+    date = get_current_date(utc_offset_seconds, cfg.get("date_format"))
 
+    time_at_location = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=utc_offset_seconds)
     if cfg.get("time_format") == "12":
-        current_time = datetime.datetime.now().strftime("%I:%M:%S %p")
 
+        current_time = time_at_location.strftime("%I:%M:%S %p")
         sunrise_time_obj = datetime.datetime.strptime(sunrise, "%H:%M")
         sunrise = sunrise_time_obj.strftime("%I:%M %p")
         sunset_time_obj = datetime.datetime.strptime(sunset, "%H:%M")
         sunset = sunset_time_obj.strftime("%I:%M %p")
     else:
-        current_time = datetime.datetime.now().strftime("%H:%M:%S")
+        current_time = time_at_location.strftime("%H:%M:%S")
         if cfg.get("time_format") == "24":
             print(f"Invalid time format '{cfg.get("time_format")}'. Please use supported date format. Using default.")
 
