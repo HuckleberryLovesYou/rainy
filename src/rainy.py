@@ -53,7 +53,7 @@ def get_location_by_city_name(city_name: str, country_code: str | None = None) -
     data = response.json()
     results = data.get("results")
     if not results:
-        raise ValueError(f"No results found for {city_name!r} in {country_code}.")
+        raise ValueError(f"No results found for {city_name!r} in {country_code!r}.")
 
     latitude_str = results[0]["latitude"]
     longitude_str = results[0]["longitude"]
@@ -172,24 +172,24 @@ def get_ascii_art(weather_code: int, is_day: bool = True) -> list[str]:
     if weather_code == 0:
         if is_day:
             return [
-                r"               ",
-                r"     \   /     ",
-                r"      .-.      ",
-                r"   ‒ (   ) ‒   ",
-                r"      `-᾿      ",
-                r"     /   \     ",
-                r"               "
+                r"                 ",
+                r"      \   /      ",
+                r"       .-.       ",
+                r"    ‒ (   ) ‒    ",
+                r"       `-᾿       ",
+                r"      /   \      ",
+                r"                 "
             ]
         else:
             return [
-                r"               ",
-                r"       _.._    ",
-                r"     .' .-'`   ",
-                r"    /  /       ",
-                r"    |  |       ",
-                r"    \  \       ",
-                r"     '._'-._   ",
-                r"        ```    "
+                r"                 ",
+                r"        _.._     ",
+                r"      .' .-'`    ",
+                r"     /  /        ",
+                r"     |  |        ",
+                r"     \  \        ",
+                r"      '._'-._    ",
+                r"         ```     "
             ]
 
     elif weather_code in [1, 2, 3]:
@@ -234,13 +234,13 @@ def get_ascii_art(weather_code: int, is_day: bool = True) -> list[str]:
         ]
     else:
         return [
-            r"                            "
-            r"~~~~   ~~~~ ~~~   * ~~~~~~~ "
-            r"~~~   *  ~~~~~  * ~~~~  ~~~~"
-            r"  ~~~~  ~~~ * ~~~~~ ~~~~   ~"
-            r"~~~~*   ~~~~   * ~~~~   ~~~~"
-            r"  * ~~~ ~~~~  ~~~~~  * ~~~~ "
-            r"                            "
+            r"                 "
+            r"~~~~   ~~~~ ~~~  "
+            r"~~~   *  ~~~~~  *"
+            r"  ~~~~  ~~~ * ~~~"
+            r"~~~~*   ~~~~   * "
+            r"  * ~~~ ~~~~  ~~~"
+            r"                 "
         ]
 
 
@@ -314,33 +314,33 @@ def output(config, ascii_art: list[str] | None, city: str, weather: str | None, 
     """
     values: dict = {}
     if config.get("show_city"):
-        values["city"] = city
+        values["City"] = city
     if config.get("show_weather"):
-        values["weather"] = weather
+        values["Weather"] = weather
     if config.get("show_temperature"):
-        values["temperature"] = temperature_str
+        values["Temperature"] = temperature_str
     if config.get("show_wind_speed"):
-        values["wind speed"] = wind_speed_str
+        values["Wind Speed"] = wind_speed_str
     if config.get("show_wind_direction"):
-        values["wind direction"] = wind_direction_str
+        values["Wind Direction"] = wind_direction_str
     if config.get("show_sunrise"):
-        values["sunrise"] = sunrise
+        values["Sunrise"] = sunrise
     if config.get("show_sunset"):
-        values["sunset"] = sunset
+        values["Sunset"] = sunset
     if config.get("show_date"):
-        values["date"] = current_date
+        values["Date"] = current_date
     if config.get("show_time"):
-        values["time"] = current_time
+        values["Time"] = current_time
     if config.get("show_uv_index"):
-        values["uv index"] = uv_index
+        values["UV Index"] = uv_index
     if config.get("show_humidity"):
-        values["humidity"] = humidity_str
+        values["Humidity"] = humidity_str
     if config.get("show_precipitation"):
-        values["precipitation"] = precipitation_str
+        values["Precipitation"] = precipitation_str
     if config.get("show_surface_pressure"):
-        values["surface pressure"] = surface_pressure_str
+        values["Surface Pressure"] = surface_pressure_str
     if config.get("show_air_quality"):
-        values["air quality index"] = air_quality_index
+        values["Air Quality Index"] = air_quality_index
 
     if config.get("show_ascii_art"):
         len_diff = len(values) - len(ascii_art)
@@ -350,12 +350,12 @@ def output(config, ascii_art: list[str] | None, city: str, weather: str | None, 
 
         for i, (key, value) in enumerate(values.items()):
             try:
-                print(f"{ascii_art[i]}{get_emoji(key) if config.get("use_emoji") is True else "○ "} {key.capitalize()}: {value}")
+                print(f"{ascii_art[i]}{get_emoji(key) if config.get("use_emoji") is True else "○ "} {key}: {value}")
             except IndexError:
                 print(ascii_art[i])
     else:
         for key, value in values.items():
-            print(f"{get_emoji(key) if config.get("use_emoji") is True else ""} {key.capitalize()}: {value}")
+            print(f"{get_emoji(key) if config.get("use_emoji") is True else ""} {key}: {value}")
 
 def get_api_speed_unit(unit: str) -> str:
     """

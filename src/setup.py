@@ -171,7 +171,7 @@ max_cache_file_count = 10""")
     def load_cache(self, city: str) -> dict | None:
         if self.is_cache_present(city) and self.is_cache_valid(city):
             with open(self.get_abs_cache_file_path(city), "r") as file:
-                return json.loads(file.read())
+                return json.load(file)
         return None
 
     def is_cache_present(self, city):
