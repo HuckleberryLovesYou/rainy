@@ -62,7 +62,7 @@ def get_location_by_city_name(city_name: str, country_code: str | None = None) -
 
     return latitude, longitude, results[0]["name"]
 
-def parse_weather(data: dict) -> tuple[int, str, str, float, float, float, float, float, int, bool, float, int, float, int, int]:
+def parse_weather(data: dict):
     """
     :param data:
     :return: tuple: It contains the weather_code (a WMO Weather interpretation (WW) code that describes the current weather (1-99) (https://open-meteo.com/en/docs))
@@ -283,7 +283,7 @@ def get_emoji(key: str):
         return ""
 
 
-def output(config, ascii_art: list[str] | None, city: str, weather: str | None, temperature_str: str, wind_speed_str: str, wind_direction_str: str | None, sunrise: str, sunset: str, current_date: str | None, current_time: str, uv_index, humidity_str, precipitation_str, surface_pressure_str, air_quality_index: int | None) -> None:
+def output(config, ascii_art: list[str] | None, city: str, weather: str, temperature_str: str, wind_speed_str: str, wind_direction_str: str, sunrise: str, sunset: str, current_date: str, current_time: str, uv_index: float, humidity_str: str, precipitation_str: str, surface_pressure_str: str, air_quality_index_str: str) -> None:
     """
     Prints the output of rainy to the terminal. It can take any amount of parameters. If no parameter is passed, the output will only be the ascii art of the current weather.
     If the amount of lines needed to display the passed parameters, it will expand the ascii art with blank lines in the same amount of characters and add the value behind it.
@@ -310,6 +310,16 @@ def output(config, ascii_art: list[str] | None, city: str, weather: str | None, 
     :type current_date: str
     :param current_time: Takes in the current time. Format depends on the configuration and is already passed formated.
     :type current_time: str
+    :param air_quality_index_str: Take the current U.S. Air Quality Index as a string e.g. 'Good (22)'
+    :type air_quality_index_str: str
+    :param surface_pressure_str: Takes the current surface Pressure e.g. '957 hPa'
+    :type surface_pressure_str: str
+    :param precipitation_str: Takes the predicted precipitation within the next hour e.g. '0.0 mm →1h'
+    :type precipitation_str: str
+    :param humidity_str: Takes the current humidity e.g. '79 %'
+    :type humidity_str: str
+    :param uv_index: Takes the current UV Index e.g. 2.3
+    :type uv_index: float
     :return: None
     """
     values: dict = {}
@@ -340,7 +350,7 @@ def output(config, ascii_art: list[str] | None, city: str, weather: str | None, 
     if config.get("show_surface_pressure"):
         values["Surface Pressure"] = surface_pressure_str
     if config.get("show_air_quality"):
-        values["Air Quality Index"] = air_quality_index
+        values["Air Quality Index"] = air_quality_index_str
 
     if config.get("show_ascii_art"):
         len_diff = len(values) - len(ascii_art)
@@ -467,6 +477,8 @@ def get_air_quality_index_concern(air_quality_index: int) -> str:
         return "Very Unhealthy"
     elif air_quality_index > 300:
         return "Hazardous"
+    else:
+        return "empty"
 
 
 def main() -> None:
