@@ -2,10 +2,12 @@
 import requests
 import datetime
 import argparse
-import setup
+import config
+import cache
 import json
 
-config = setup.Config()
+config = config.Config()
+cache = cache.Cache()
 
 def get_location_by_ip() -> tuple[float, float, str]:
     """
@@ -515,7 +517,7 @@ def main() -> None:
 
     weather_data = None
     if not args.bypass_cache:
-        weather_data = config.load_cache(city_name)
+        weather_data = cache.load_cache(city_name)
         print("Looking for cache...", end="\r")
 
     if weather_data is None:
@@ -530,7 +532,7 @@ def main() -> None:
         if cfg.get("show_air_quality"):
             weather_data_air_quality_index = get_air_quality_index_by_api(latitude, longitude)
             weather_data["current"].update({"us_aqi": weather_data_air_quality_index})
-        config.write_cache(city_name, json.dumps(weather_data))
+        cache.write_cache(city_name, json.dumps(weather_data))
     utc_offset_seconds, weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure, air_quality_index = parse_weather(weather_data)
 
     # converting Celsius returned by api into kelvin
