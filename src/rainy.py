@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import datetime
 import argparse
-import config
-import cache
-import api
+from src import config
+from src import cache
+from src import api
 import json
 
 config = config.Config()
@@ -419,9 +419,9 @@ def main() -> None:
         api_temperature_unit = get_api_temperature_unit(cfg.get("temperature_unit"))
         api_precipitation_unit = get_api_precipitation_unit(cfg.get("precipitation_unit"))
 
-        weather_data = api.get_weather_by_api(latitude, longitude, api_speed_unit, api_temperature_unit, api_precipitation_unit)
+        weather_data = api.get_weather_forecast(latitude, longitude, api_speed_unit, api_temperature_unit, api_precipitation_unit)
         if cfg.get("show_air_quality"):
-            weather_data_air_quality_index = api.get_air_quality_index_by_api(latitude, longitude)
+            weather_data_air_quality_index = api.get_air_quality(latitude, longitude)
             weather_data["current"].update({"us_aqi": weather_data_air_quality_index})
         cache.write_cache(city_name, json.dumps(weather_data))
     utc_offset_seconds, weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure, air_quality_index = parse_weather(weather_data)
