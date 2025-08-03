@@ -1,11 +1,17 @@
-PREFIX ?= /usr/local
-BINDIR = $(PREFIX)/bin
+PREFIX ?= /usr/local/bin
+RAINY_DIR = $(PREFIX)/rainy
 
 install:
-	install -d $(BINDIR)
-	install -m 755 src/rainy.py $(BINDIR)/rainy
-	chmod +x $(BINDIR)/rainy
+	install -d $(RAINY_DIR)
+	cp -r src/* $(RAINY_DIR)/
+	chmod +x $(RAINY_DIR)/rainy.py
+	ln -sf $(RAINY_DIR)/rainy.py $(PREFIX)/rainy
 
 uninstall:
-	rm -f $(BINDIR)/rainy
-	rm -rf ~/.rainy
+	rm -f $(PREFIX)/rainy
+	rm -rf $(RAINY_DIR)
+	@if [ -n "$$SUDO_USER" ]; then \
+		rm -rf /home/$$SUDO_USER/.rainy; \
+	else \
+		rm -rf $(HOME)/.rainy; \
+	fi
