@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 import datetime
 import argparse
-from src import config
-from src import cache
-from src import api
 import json
+import logging
+
+import config
+import cache
+import api
+
 
 config = config.Config()
 cache = cache.Cache()
@@ -139,12 +142,31 @@ def get_ascii_art(weather_code: int, is_day: bool = True) -> list[str]:
 
 def get_emoji(key: str):
     """
-    Gets the emoji for the passed key.
-    If the key is not valid or unset, it returns an empty string.
+    Returns a Unicode emoji corresponding to the provided weather-related key.
 
-    :param key: A key of an entry in the dictionary 'values'
-    :type: key: string
-    :return: An emoji that represents the key passed into it. If the key is not valid or unset, it returns an empty string.
+    This function maps specific string keys (such as "city", "weather", "temperature", etc.)
+    to their representative emoji for use in the Rainy CLI output. If the key is not recognized
+    or is unset, an empty string is returned.
+
+    Supported keys include:
+        - "city": 🏠
+        - "weather": ⛅
+        - "temperature": 🌡️
+        - "wind speed": 💨
+        - "wind direction": 🧭
+        - "sunrise": 🌅
+        - "sunset": 🌇
+        - "date": 📅
+        - "time": ⏰
+        - "precipitation": 🌧️
+        - "surface pressure": 🎚️
+        - "humidity": 💧
+        - "uv index": ☀️
+
+    :param key: The string key representing a weather attribute for which to get an emoji.
+    :type key: str
+    :return: The emoji string representing the key, or an empty string if the key is invalid or unset.
+    :rtype: str
     """
     if key == "city":
         return "\U0001F3E0"
