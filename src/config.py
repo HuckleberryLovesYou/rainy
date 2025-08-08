@@ -4,6 +4,7 @@ import os
 cfg_folder_name: str = r".rainy"
 cfg_file_name: str = r"config.ini"
 cache_folder_name: str = r"cache"
+history_folder_name: str = r"history"
 
 
 class Config:
@@ -11,6 +12,7 @@ class Config:
         self.abs_home_path: str = str(os.path.expanduser("~"))
         self.abs_cfg_folder_path: str = os.path.join(self.abs_home_path, cfg_folder_name)
         self.abs_cache_folder_path: str = os.path.join(self.abs_cfg_folder_path, cache_folder_name)
+        self.abs_history_folder_path: str = os.path.join(self.abs_cfg_folder_path, history_folder_name)
         self.abs_cfg_file_path: str = os.path.join(self.abs_cfg_folder_path, cfg_file_name)
         self.cache_ttl: int = 360
         self.max_cache_file_count: int = 10
@@ -20,6 +22,9 @@ class Config:
 
     def get_abs_cache_folder_path(self):
         return self.abs_cache_folder_path
+
+    def get_abs_history_folder_path(self):
+        return self.abs_history_folder_path
 
     def create_cfg_folder(self, reinit: bool = False):
         if reinit:
@@ -31,9 +36,11 @@ class Config:
             return None
 
         os.mkdir(self.abs_cfg_folder_path)
-        print(f"Created .rainy folder at {self.abs_cfg_folder_path}.")
+        print(f"Created .rainy folder at {self.abs_cfg_folder_path!r}.")
         os.mkdir(self.abs_cache_folder_path)
-        print(f"Created cache folder at {self.abs_cache_folder_path}.")
+        print(f"Created cache folder at {self.abs_cache_folder_path!r}.")
+        os.mkdir(self.abs_history_folder_path)
+        print(f"Created history folder at {self.abs_history_folder_path!r}.")
         with open(self.abs_cfg_file_path, "w") as file:
             file.write("""# Configuration File for rainy.
 # Any values can be changed using CLI-Arguments as well.

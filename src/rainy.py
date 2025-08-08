@@ -2,16 +2,17 @@
 import datetime
 import argparse
 import json
-import logging
 
 import config
 import cache
 import api
+import history
 
 
 config = config.Config()
 cache = cache.Cache()
 api = api.API()
+history = history.History()
 
 def parse_weather(data: dict):
     """
@@ -349,6 +350,7 @@ def create_parser() -> argparse.PARSER:
     parser.add_argument("-country", "--country-code", dest="country_code", help="Specify the country code for the country to look for the specified city . A List of Country Codes can be found here: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements", type=str)
     parser.add_argument("--reinit", dest="reinit", action="store_true", help="This reinitializes the configuration folder at ~/.rainy. This will also delete cache and configuration.")
     parser.add_argument("--bypass-cache", dest="bypass_cache", action="store_true", help="This allows you to bypass the cache stored at ~/.rainy/cache.")
+    parser.add_argument("--history", nargs="?", const=-1, default=None, type=int, help="If given with no number (e.g. `--history`), history will be –1; if you pass a number (e.g. `--history 3`), you get that index. If you omit the flag entirely, history is None.")
     return parser
 
 
@@ -425,6 +427,14 @@ def main() -> None:
     if args.country_code:
         country_code = args.country_code
 
+    if args.history:
+        if args.history == -1:
+            history.print_history()
+            city_name = history.load_city_at_index(int(input("Enter Index of history entry: ")))
+        else:
+            history_index: int = args.history
+            city_name = history.load_city_at_index(history_index)
+
     if not city_name:
         latitude, longitude, city_name = api.get_location_by_ip()
 
@@ -446,6 +456,7 @@ def main() -> None:
             weather_data_air_quality_index = api.get_air_quality(latitude, longitude)
             weather_data["current"].update({"us_aqi": weather_data_air_quality_index})
         cache.write_cache(city_name, json.dumps(weather_data))
+    history.append_city_to_history(city_name)
     utc_offset_seconds, weather_code, sunrise, sunset, temperature, temperature_max, temperature_min, apparent_temperature, wind_speed, wind_direction, is_day, uv_index, humidity, precipitation, surface_pressure, air_quality_index = parse_weather(weather_data)
 
     # converting Celsius returned by api into kelvin
