@@ -132,12 +132,12 @@ def get_ascii_art(weather_code: int, is_day: bool = True) -> list[str]:
         ]
     else:
         return [
-            r"                 "
-            r"~~~~   ~~~~ ~~~  "
-            r"~~~   *  ~~~~~  *"
-            r"  ~~~~  ~~~ * ~~~"
-            r"~~~~*   ~~~~   * "
-            r"  * ~~~ ~~~~  ~~~"
+            r"                 ",
+            r"~~~~   ~~~~ ~~~  ",
+            r"~~~   *  ~~~~~  *",
+            r"  ~~~~  ~~~ * ~~~",
+            r"~~~~*   ~~~~   * ",
+            r"  * ~~~ ~~~~  ~~~",
             r"                 "
         ]
 
@@ -200,7 +200,7 @@ def get_emoji(key: str):
         return ""
 
 
-def output(config, ascii_art: list[str] | None, city: str, weather: str, temperature_str: str, wind_speed_str: str, wind_direction_str: str, sunrise: str, sunset: str, current_date: str, current_time: str, uv_index: float, humidity_str: str, precipitation_str: str, surface_pressure_str: str, air_quality_index_str: str) -> None:
+def output(config, ascii_art: list[str] | None, city: str, weather: str, temperature_str: str, wind_speed_str: str, wind_direction_str: str, sunrise: str, sunset: str, current_date: str, current_time: str, uv_index: float, humidity_str: str, precipitation_str: str, surface_pressure_str: str, air_quality_index_str: str | None) -> None:
     """
     Prints the output of rainy to the terminal. It can take any amount of parameters. If no parameter is passed, the output will only be the ascii art of the current weather.
     If the amount of lines needed to display the passed parameters, it will expand the ascii art with blank lines in the same amount of characters and add the value behind it.
@@ -277,12 +277,23 @@ def output(config, ascii_art: list[str] | None, city: str, weather: str, tempera
 
         for i, (key, value) in enumerate(values.items()):
             try:
-                print(f"{ascii_art[i]}{get_emoji(key) if config.get("use_emoji") is True else "○ "} {key}: {value}")
+                print(ascii_art[i], end="")
+                if config.get("use_emoji"):
+                    print(get_emoji(key), end="")
+                else:
+                    print("○ ", end="")
+
+                print(key + ": " + value)
             except IndexError:
                 print(ascii_art[i])
     else:
         for key, value in values.items():
-            print(f"{get_emoji(key) if config.get("use_emoji") is True else ""} {key}: {value}")
+            if config.get("use_emoji"):
+                print(get_emoji(key), end="")
+            else:
+                print("○ ", end="")
+
+            print(key + ": " + value)
 
 def get_api_speed_unit(unit: str) -> str:
     """
@@ -347,9 +358,9 @@ def create_parser() -> argparse.PARSER:
         description="Neofetch-like, minimalistic, and customizable weather-fetching tool. Anything set using CLI-Arguments is only used for one execution of rainy. To make persistent changes edit the configuration file.",
         epilog="Example: %(prog)s --city-name Potsdam --country-code DE"
     )
-    parser.add_argument("-city, --city-name", dest="city_name", help="Specify the city name to look for. For example for Potsdam the cit name would be 'Potsdam'. If not specified, looks up location by your public IP.", type=str)
+    parser.add_argument("-c", "--city-name", dest="city_name", help="Specify the city name to look for. For example for Potsdam the cit name would be 'Potsdam'. If not specified, looks up location by your public IP.", type=str)
     parser.add_argument("-country", "--country-code", dest="country_code", help="Specify the country code for the country to look for the specified city . A List of Country Codes can be found here: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements", type=str)
-    parser.add_argument("--reinit", dest="reinit", action="store_true", help="This reinitializes the configuration folder at ~/.rainy. This will also delete cache and configuration.")
+    parser.add_argument("--reinit", dest="reinit", action="store_true", help="This re-initializes the configuration folder at ~/.rainy. This will also delete cache and configuration.")
     parser.add_argument("--bypass-cache", dest="bypass_cache", action="store_true", help="This allows you to bypass the cache stored at ~/.rainy/cache.")
     parser.add_argument("-v", "--version", dest="version", action="store_true", help="This shows the version of rainy.")
     parser.add_argument("--history", nargs="?", const=-1, default=None, type=int, help="If given with no number (e.g. `--history`), history will be –1; if you pass a number (e.g. `--history 3`), you get that index. If you omit the flag entirely, history is None.")
@@ -485,7 +496,6 @@ def main() -> None:
 
     time_at_location = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=utc_offset_seconds)
     if cfg.get("time_format") == "12":
-
         current_time = time_at_location.strftime("%I:%M:%S %p")
         sunrise_time_obj = datetime.datetime.strptime(sunrise, "%H:%M")
         sunrise = sunrise_time_obj.strftime("%I:%M %p")
@@ -493,14 +503,15 @@ def main() -> None:
         sunset = sunset_time_obj.strftime("%I:%M %p")
     else:
         current_time = time_at_location.strftime("%H:%M:%S")
-        if cfg.get("time_format") == "24":
-            print(f"Invalid time format '{cfg.get("time_format")}'. Please use supported date format. Using default.")
+        if not cfg.get("time_format") == "24":
+            print(f"Invalid time format '{cfg.get("time_format")}'. Please use supported time format. Using default.")
 
     humidity_str = str(humidity) + " %"
     precipitation_str = str(precipitation) + f" {cfg.get("precipitation_unit")} →1h"
     surface_pressure_str = str(surface_pressure) + " hPa"
     wind_direction_str = get_wind_direction(wind_direction) + f" ({wind_direction}°)"
-    air_quality_index_str = get_air_quality_index_concern(air_quality_index) + f" ({air_quality_index})"
+    if cfg.get("show_air_quality"):
+        air_quality_index_str = get_air_quality_index_concern(air_quality_index) + f" ({air_quality_index})"
 
     ascii_art = get_ascii_art(weather_code, is_day)
 

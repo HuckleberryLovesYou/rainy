@@ -167,7 +167,7 @@ max_cache_file_count = 10""")
 
             # Formats
             "date_format": parser.get("Formats", "date_format"),
-            "time_format": parser.getint("Formats", "time_format"),
+            "time_format": parser.get("Formats", "time_format"),
 
             # What to show
             "show_city": parser.getboolean("Show", "show_city"),
