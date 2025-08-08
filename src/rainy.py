@@ -8,6 +8,7 @@ import cache
 import api
 import history
 
+rainy_version: str = "1.2.0"
 
 config = config.Config()
 cache = cache.Cache()
@@ -350,6 +351,7 @@ def create_parser() -> argparse.PARSER:
     parser.add_argument("-country", "--country-code", dest="country_code", help="Specify the country code for the country to look for the specified city . A List of Country Codes can be found here: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements", type=str)
     parser.add_argument("--reinit", dest="reinit", action="store_true", help="This reinitializes the configuration folder at ~/.rainy. This will also delete cache and configuration.")
     parser.add_argument("--bypass-cache", dest="bypass_cache", action="store_true", help="This allows you to bypass the cache stored at ~/.rainy/cache.")
+    parser.add_argument("-v", "--version", dest="version", action="store_true", help="This shows the version of rainy.")
     parser.add_argument("--history", nargs="?", const=-1, default=None, type=int, help="If given with no number (e.g. `--history`), history will be –1; if you pass a number (e.g. `--history 3`), you get that index. If you omit the flag entirely, history is None.")
     return parser
 
@@ -406,6 +408,10 @@ def main() -> None:
     except SystemExit:
         # Help was triggered or parsing failed
         exit()
+
+    if args.version:
+        print(rainy_version)
+        return None
 
     if args.reinit:
         config.create_cfg_folder(True)
