@@ -1,0 +1,15 @@
+include README.md
+include LICENSE
+include requirements.txt
+include rainy.bat
+
+# Include assets used in README and releases
+recursive-include assets *.png *.ico
+
+# Ensure all source files are included
+recursive-include src *.py
+
+# Exclude common unwanted files
+global-exclude __pycache__ *.py[cod] *.so
+
+

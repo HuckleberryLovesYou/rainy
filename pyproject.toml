@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rainy"
+version = "1.2.0"
+description = "Neofetch-like, minimalistic, and customizable weather-fetching CLI tool"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [
+  { name = "HuckleberryLovesYou" }
+]
+dependencies = [
+  "requests~=2.32.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/HuckleberryLovesYou/rainy"
+Repository = "https://github.com/HuckleberryLovesYou/rainy"
+
+[tool.setuptools]
+py-modules = [
+  "rainy",
+  "api",
+  "config",
+  "cache",
+  "history",
+  "models",
+  "exceptions",
+  "cli",
+  "app"
+]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+
