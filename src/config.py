@@ -1,5 +1,7 @@
 import configparser
 import os
+from models import ConfigSettings, TemperatureUnit, SpeedUnit, PrecipitationUnit, TimeFormat, DateFormat
+from exceptions import ConfigError
 
 cfg_folder_name: str = r".rainy"
 cfg_file_name: str = r"config.ini"
@@ -14,8 +16,6 @@ class Config:
         self.abs_cache_folder_path: str = os.path.join(self.abs_cfg_folder_path, cache_folder_name)
         self.abs_history_folder_path: str = os.path.join(self.abs_cfg_folder_path, history_folder_name)
         self.abs_cfg_file_path: str = os.path.join(self.abs_cfg_folder_path, cfg_file_name)
-        self.cache_ttl: int = 360
-        self.max_cache_file_count: int = 10
 
         if not os.path.exists(self.abs_cfg_folder_path):
             self.create_cfg_folder()
@@ -26,11 +26,13 @@ class Config:
     def get_abs_history_folder_path(self):
         return self.abs_history_folder_path
 
-    def create_cfg_folder(self, reinit: bool = False):
-        if reinit:
-            self.remove_directory_tree(self.abs_cfg_folder_path)
-            print("Removed current .rainy folder.")
+    def reinit_cfg_folder(self):
+        print("Reinitializing Configuration Folder")
+        self.remove_directory_tree(self.abs_cfg_folder_path)
+        print("Removed current .rainy folder.")
+        self.create_cfg_folder()
 
+    def create_cfg_folder(self):
         if os.path.exists(self.abs_cfg_folder_path):
             print(f"Configuration Folder already exists at '{self.abs_cfg_folder_path}'. Skipping creation. If this is wrong you can recreate this folder by passing --reinit to rainy.py.")
             return None
@@ -150,58 +152,58 @@ max_cache_file_count = 10""")
                 self.remove_directory_tree(path)
         os.rmdir(start_directory)
 
-    def load_config(self):
+    def load_config(self) -> ConfigSettings:
         parser = configparser.ConfigParser()
         parser.read(self.abs_cfg_file_path)
 
-        # load configuration
-        cfg = {
-            # Location
-            "city_name": parser.get("Location", "city_name"),
-            "country_code": parser.get("Location", "country_code"),
+        config_settings = ConfigSettings(
+            city_name   =parser.get("Location", "city_name"),
+            country_code=parser.get("Location", "country_code"),
+            temperature_unit="°" + parser.get("Units", "temperature_unit"),
+            speed_unit=parser.get("Units", "speed_unit"),
+            precipitation_unit=parser.get("Units", "precipitation_unit"),
+            date_format=parser.get("Formats", "date_format"),
+            time_format=parser.getint("Formats", "time_format"),
+            show_city=parser.getboolean("Show", "show_city"),
+            show_weather=parser.getboolean("Show", "show_weather"),
+            show_temperature=parser.getboolean("Show", "show_temperature"),
+            show_apparent_temperature=parser.getboolean("Show", "show_apparent_temperature"),
+            show_max_and_min_temperature=parser.getboolean("Show", "show_max_and_min_temperature"),
+            show_wind_speed=parser.getboolean("Show", "show_wind_speed"),
+            show_wind_direction=parser.getboolean("Show", "show_wind_direction"),
+            show_sunrise=parser.getboolean("Show", "show_sunrise"),
+            show_sunset=parser.getboolean("Show", "show_sunset"),
+            show_date=parser.getboolean("Show", "show_date"),
+            show_time=parser.getboolean("Show", "show_time"),
+            show_uv_index=parser.getboolean("Show", "show_uv_index"),
+            show_humidity=parser.getboolean("Show", "show_humidity"),
+            show_precipitation=parser.getboolean("Show", "show_precipitation"),
+            show_surface_pressure=parser.getboolean("Show", "show_surface_pressure"),
+            show_air_quality=parser.getboolean("Show", "show_air_quality"),
+            use_emoji=parser.getboolean("Output", "use_emoji"),
+            show_ascii_art=parser.getboolean("Output", "show_ascii_art"),
+            cache_ttl=parser.getint("Misc", "cache_ttl"),
+            max_cache_file_count=parser.getint("Misc", "max_cache_file_count"),
+        )
 
-            # Units
-            "temperature_unit": "°" + parser.get("Units", "temperature_unit"),
-            "speed_unit": parser.get("Units", "speed_unit"),
-            "precipitation_unit": parser.get("Units", "precipitation_unit"),
+        self.validate_config(config_settings)
 
-            # Formats
-            "date_format": parser.get("Formats", "date_format"),
-            "time_format": parser.get("Formats", "time_format"),
+        return config_settings
 
-            # What to show
-            "show_city": parser.getboolean("Show", "show_city"),
-            "show_weather": parser.getboolean("Show", "show_weather"),
-            "show_temperature": parser.getboolean("Show", "show_temperature"),
-            "show_apparent_temperature": parser.getboolean("Show", "show_apparent_temperature"),
-            "show_max_and_min_temperature": parser.getboolean("Show", "show_max_and_min_temperature"),
-            "show_wind_speed": parser.getboolean("Show", "show_wind_speed"),
-            "show_wind_direction": parser.getboolean("Show", "show_wind_direction"),
-            "show_sunrise": parser.getboolean("Show", "show_sunrise"),
-            "show_sunset": parser.getboolean("Show", "show_sunset"),
-            "show_date": parser.getboolean("Show", "show_date"),
-            "show_time": parser.getboolean("Show", "show_time"),
-            "show_uv_index": parser.getboolean("Show", "show_uv_index"),
-            "show_humidity": parser.getboolean("Show", "show_humidity"),
-            "show_precipitation": parser.getboolean("Show", "show_precipitation"),
-            "show_surface_pressure": parser.getboolean("Show", "show_surface_pressure"),
-            "show_air_quality": parser.getboolean("Show", "show_air_quality"),
+    def validate_config(self, config: ConfigSettings) -> bool:
+        if config.temperature_unit not in (e.value for e in TemperatureUnit):
+            raise ConfigError(f"Configuration field temperature_unit with value {config.temperature_unit!r} is invalid.")
 
-            # Output options
-            "use_emoji": parser.getboolean("Output", "use_emoji"),
-            "show_ascii_art": parser.getboolean("Output", "show_ascii_art"),
+        if config.speed_unit not in (e.value for e in SpeedUnit):
+            raise ConfigError(f"Configuration field speed_unit with value {config.speed_unit!r} is invalid.")
 
-            # Misc
-            "cache_ttl": parser.getint("Misc", "cache_ttl"),
-            "max_cache_file_count": parser.getint("Misc", "max_cache_file_count")
-        }
+        if config.precipitation_unit not in (e.value for e in PrecipitationUnit):
+            raise ConfigError(f"Configuration field precipitation_unit with value {config.precipitation_unit!r} is invalid.")
 
-        cache_ttl = cfg.get("cache_ttl")
-        if cache_ttl is not None and cache_ttl.is_integer() and cache_ttl >= 1:
-            self.cache_ttl = round(cache_ttl)
+        if config.date_format not in (e.value for e in DateFormat):
+            raise ConfigError(f"Configuration field date_format with value {config.date_format!r} is invalid.")
 
-        max_cache_file_count = cfg.get("max_cache_file_count")
-        if max_cache_file_count is not None and max_cache_file_count.is_integer() and max_cache_file_count >= 1:
-            self.max_cache_file_count = round(max_cache_file_count)
+        if config.time_format not in (e.value for e in TimeFormat):
+            raise ConfigError(f"Configuration field time_format with value {config.time_format!r} is invalid.")
 
-        return cfg
+        return True

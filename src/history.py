@@ -14,7 +14,7 @@ class History:
         self.abs_history_file_path = os.path.join(self.abs_history_folder_path, history_file_name)
 
 
-    def append_city_to_history(self, city: str) -> None:
+    def add_history(self, city: str) -> None:
         if os.path.exists(self.abs_history_file_path):
             with open(self.abs_history_file_path, "r") as file:
                 history: list[str] = json.load(file)

@@ -1,20 +1,25 @@
 import os
 import json
 import time # TODO: Get rid of time dependency
-import config
+from typing import Any
 
 cache_file_name: str = r"cache.json"
 
 
 class Cache:
-    def __init__(self):
-        self.abs_cache_folder_path: str = config.Config().get_abs_cache_folder_path()
+    def __init__(self, config):
+        self.abs_cache_folder_path: str = config.get_abs_cache_folder_path()
         self.cache_ttl: int = 360
         self.max_cache_file_count: int = 10
 
 
     def get_abs_cache_file_path(self, city) -> str:
-        return os.path.join(self.abs_cache_folder_path, f"cache_{city.replace(" ", "-")}.json")
+        """
+        This gets the absolute file path of the cache file. The name of the file itself consists of the letters 'cache_', followed by the name of the city where spaces are replaced with dashes and followed by .json.
+        :param city:
+        :return: Returns the absolute file path of the cache file.
+        """
+        return os.path.join(self.abs_cache_folder_path, f"cache_{city.replace(' ', '-')}.json")
 
 
     def count_cache_files(self) -> int:
@@ -22,6 +27,10 @@ class Cache:
 
 
     def get_oldest_cache_file_path(self) -> str:
+        """
+        This function get the absolute file path of the oldest cache determined by the modification time.
+        :return:
+        """
         data = []
         for cache_file in os.listdir(self.abs_cache_folder_path):
             cache_file_path = os.path.join(self.abs_cache_folder_path, cache_file)
@@ -32,15 +41,16 @@ class Cache:
         return data[0][0]
 
 
-    def write_cache(self, city: str, cache: str):
+    def write_cache(self, city: str, data: Any):
         while self.count_cache_files() >= self.max_cache_file_count:  # While loop needed to adapt if config max_cache_file_count changed blow the current cache file count
             os.remove(self.get_oldest_cache_file_path())  # Removes the oldest cache if max cache count is reached
 
         with open(self.get_abs_cache_file_path(city), "w") as file:
-            file.write(cache)
+            file.write(json.dumps(data))
 
 
     def load_cache(self, city: str) -> dict | None:
+        print("Looking for cache...", end="\r")
         if self.is_cache_present(city) and self.is_cache_valid(city):
             with open(self.get_abs_cache_file_path(city), "r") as file:
                 return json.load(file)
