@@ -89,13 +89,13 @@ def get_emoji(key: str) -> str:
 
 
 def get_wind_direction(wind_direction: int) -> str:
-    if wind_direction < 44:
+    if wind_direction >= 315 or wind_direction < 45:
         direction = "North"
-    elif wind_direction < 134:
+    elif wind_direction < 135:
         direction = "East"
-    elif wind_direction < 224:
+    elif wind_direction < 225:
         direction = "South"
-    else:
+    else:  # 225 <= wind_direction < 315
         direction = "West"
 
     return f"{wind_direction} ({direction})"
