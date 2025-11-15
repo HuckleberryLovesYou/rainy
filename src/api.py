@@ -7,7 +7,23 @@ class API:
         self.apis: dict = {"ipinfo": [r"https://ipinfo.io/json", "Fetching IP-Location-API..."],
                            "geocoding": [r"https://geocoding-api.open-meteo.com/v1/search", "Fetching Geocoding-API..."],
                            "forecast": [r"https://api.open-meteo.com/v1/forecast", "Fetching Weather-API..."],
-                           "air_quality": [r"https://air-quality-api.open-meteo.com/v1/air-quality", "Fetching Air Quality-API..."]}
+                           "air_quality": [r"https://air-quality-api.open-meteo.com/v1/air-quality", "Fetching Air Quality-API..."]
+        }
+        self._SPEED_UNIT_MAP: dict[str, str] = {
+            "mph": "mph",
+            "km/h": "kmh",
+            "m/s": "ms",
+            "knots": "kn",
+        }
+        self._TEMP_UNIT_MAP: dict[str, str] = {
+            "°c": "celsius",
+            "°f": "fahrenheit",
+            "°k": "celsius",  # Kelvin is converted later, so we fetch Celsius
+        }
+        self._PRECIP_UNIT_MAP: dict[str, str] = {
+            "mm": "mm",
+            "inch": "inch",
+        }
 
     def api_call(self, api: str, params: dict = None):
         """
@@ -24,7 +40,7 @@ class API:
         api_info = self.apis.get(api)
         if not api_info:
             raise Exception(f"No Information found for api {api!r} in self.api_info.")
-        print(api_info[1] + (" " * 30), end="\n")
+        print(api_info[1] + (" " * 30), end="\r")
         if not params:
             params = {}
 
@@ -145,50 +161,38 @@ class API:
         """
         Convert any speed unit into the API representation for the API Call.
         If an invalid unit is requested, it will raise an APIError.
-        Default: "kmh" (km/h)
         :param unit: This is the speed unit to get the API representation for.
         :type unit: str
         :return: API representation of the requested unit
         """
-        if unit == "mph":
-            return "mph"
-        elif unit == "km/h":
-            return "kmh"
-        elif unit == "m/s":
-            return "ms"
-        elif unit == "knots":
-            return "kn"
-        else:
+        api_unit = self._SPEED_UNIT_MAP.get(unit.lower())
+        if api_unit is None:
             raise APIError(f"The configured unit {unit!r} wasn't matched with any supported unit.")
+        return api_unit
+
 
     def get_api_temperature_unit(self, unit: str) -> str:
         """
         Convert any temperature unit into the API representation for the API Call.
-        The API can't handle kelvin, which means it has to be converted afterward. For easy conversion, Celsius will be used for the API call.
         If an invalid unit is requested, it will raise an APIError.
         :param unit: This is the temperature unit to get the API representation for.
         :type unit: str
         :return: API representation of the requested unit
         """
-        if unit == "°C":
-            return "celsius"
-        elif unit == "°F":
-            return "fahrenheit"
-        elif unit == "°K":
-            return "celsius"
-        else:
+        api_unit = self._TEMP_UNIT_MAP.get(unit.lower())
+        if api_unit is None:
             raise APIError(f"The configured unit {unit!r} wasn't matched with any supported unit.")
+        return api_unit
 
     def get_api_precipitation_unit(self, unit: str) -> str:
         """
         Convert any precipitation unit into the API representation for the API Call.
         If an invalid unit is requested, it will raise an APIError.
-        Default: "mm" (Millimeters)
         :param unit: This is the precipitation unit to get the API representation for.
         :type unit: str
         :return: API representation of the requested unit
         """
-        if unit == "mm" or unit == "inch":
-            return unit
-        else:
+        api_unit = self._PRECIP_UNIT_MAP.get(unit.lower())
+        if api_unit is None:
             raise APIError(f"The configured unit {unit!r} wasn't matched with any supported unit.")
+        return api_unit

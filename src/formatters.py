@@ -2,21 +2,36 @@ import datetime
 from exceptions import FormatError
 from models import LocalDateTime
 
+_EMOJI_MAP: dict[str, str] = {
+    "city": "\U0001F3E0",
+    "weather": "\U000026C5",
+    "temperature": "\U0001F321",
+    "wind speed": "\U0001F4A8",
+    "wind direction": "\U0001F9ED",
+    "sunrise": "\U0001F305",
+    "sunset": "\U0001F307",
+    "date": "\U0001F4C5",
+    "time": "\U000023F0",
+    "precipitation": "\U0001F327",
+    "surface pressure": "\U0001F39A",
+    "humidity": "\U0001F4A7",
+    "uv index": "\U00002600"
+}
+
+_DATE_FORMAT_MAP: dict[str, str] = {
+    "MM/DD/YYYY": "%m/%d/%Y",
+    "DD/MM/YYYY": "%d/%m/%Y",
+    "YYYY/MM/DD": "%Y/%m/%d",
+    "YYYY-MM-DD": "%Y-%m-%d",
+    "DD.MM.YYYY": "%d.%m.%Y"
+}
 
 def get_local_date_time(utc_time_offset_seconds, sunrise, sunset, date_format, time_format) -> LocalDateTime:
     time_at_location = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=utc_time_offset_seconds)
-    if date_format == "MM/DD/YYYY":
-        local_date = time_at_location.strftime("%m/%d/%Y")
-    elif date_format == "DD/MM/YYYY":
-        local_date = time_at_location.strftime("%d/%m/%Y")
-    elif date_format == "YYYY/MM/DD":
-        local_date = time_at_location.strftime("%Y/%m/%d")
-    elif date_format == "YYYY-MM-DD":
-        local_date = time_at_location.strftime("%Y-%m-%d")
-    elif date_format == "DD.MM.YYYY":
-        local_date = time_at_location.strftime("%d.%m.%Y")
-    else:
+    date_format_str = _DATE_FORMAT_MAP.get(date_format)
+    if date_format_str is None:
         raise FormatError(f"The date format configured {date_format!r} wasn't matched with any supported format.")
+    local_date = time_at_location.strftime(date_format_str)
 
     if time_format == 12:
         local_time = time_at_location.strftime("%I:%M:%S %p")
@@ -69,34 +84,8 @@ def get_emoji(key: str) -> str:
     :return: The emoji string representing the key, or an empty string if the key is invalid or unset.
     :rtype: str
     """
-    if key == "city":
-        return "\U0001F3E0"
-    elif key == "weather":
-        return "\U000026C5"
-    elif key == "temperature":
-        return "\U0001F321"
-    elif key == "wind speed":
-        return "\U0001F4A8"
-    elif key == "wind direction":
-        return "\U0001F9ED"
-    elif key == "sunrise":
-        return "\U0001F305"
-    elif key == "sunset":
-        return "\U0001F307"
-    elif key == "date":
-        return "\U0001F4C5"
-    elif key == "time":
-        return "\U000023F0"
-    elif key == "precipitation":
-        return "\U0001F327"
-    elif key == "surface pressure":
-        return "\U0001F39A"
-    elif key == "humidity":
-        return "\U0001F4A7"
-    elif key == "uv index":
-        return "\U00002600"
-    else:
-        return ""
+    emoji = _EMOJI_MAP.get(key.lower(), "")
+    return emoji
 
 
 def get_wind_direction(wind_direction: int) -> str:
