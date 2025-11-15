@@ -12,7 +12,7 @@ def output(weather: Weather, config: ConfigSettings) -> None:
     """
     local_date_time = formatters.get_local_date_time(weather.utc_offset_seconds, weather.sunrise_local, weather.sunset_local, config.date_format, config.time_format)
 
-    values: dict = {}
+    values: dict[str, str | float] = {}
     if config.show_city:
         values["City"] = weather.city_name
     if config.show_weather:
