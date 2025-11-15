@@ -2,15 +2,18 @@ import os
 import json
 import time # TODO: Get rid of time dependency
 from typing import Any
+from models import ConfigSettings
 
 cache_file_name: str = r"cache.json"
 
 
 class Cache:
     def __init__(self, config):
-        self.abs_cache_folder_path: str = config.get_abs_cache_folder_path()
-        self.cache_ttl: int = 360
-        self.max_cache_file_count: int = 10
+        self.abs_cache_folder_path: str = config.abs_cache_folder_path
+
+        config_settings: ConfigSettings = config.get_config()
+        self.cache_ttl: int = config_settings.cache_ttl
+        self.max_cache_file_count: int = config_settings.max_cache_file_count
 
 
     def get_abs_cache_file_path(self, city) -> str:
