@@ -18,7 +18,7 @@ def main(args):
     if cli_options.reinitialize_config:
         config.reinit_cfg_folder()
 
-    config_settings = config.load_config()
+    config_settings = config.get_config()
     city_name = None
     country_code = None
 

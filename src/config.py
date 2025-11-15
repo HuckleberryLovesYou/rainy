@@ -16,15 +16,14 @@ class Config:
         self.abs_cache_folder_path: str = os.path.join(self.abs_cfg_folder_path, cache_folder_name)
         self.abs_history_folder_path: str = os.path.join(self.abs_cfg_folder_path, history_folder_name)
         self.abs_cfg_file_path: str = os.path.join(self.abs_cfg_folder_path, cfg_file_name)
-
+        self._config_settings: ConfigSettings = None
         if not os.path.exists(self.abs_cfg_folder_path):
             self.create_cfg_folder()
 
-    def get_abs_cache_folder_path(self):
-        return self.abs_cache_folder_path
-
-    def get_abs_history_folder_path(self):
-        return self.abs_history_folder_path
+    def get_config(self) -> ConfigSettings:
+        if self._config_settings is None:
+            self._config_settings = self._load_config()
+        return self._config_settings
 
     def reinit_cfg_folder(self):
         print("Reinitializing Configuration Folder")
@@ -152,12 +151,12 @@ max_cache_file_count = 10""")
                 self.remove_directory_tree(path)
         os.rmdir(start_directory)
 
-    def load_config(self) -> ConfigSettings:
+    def _load_config(self) -> ConfigSettings:
         parser = configparser.ConfigParser()
         parser.read(self.abs_cfg_file_path)
 
         config_settings = ConfigSettings(
-            city_name   =parser.get("Location", "city_name"),
+            city_name=parser.get("Location", "city_name"),
             country_code=parser.get("Location", "country_code"),
             temperature_unit="°" + parser.get("Units", "temperature_unit"),
             speed_unit=parser.get("Units", "speed_unit"),
