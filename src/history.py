@@ -10,7 +10,7 @@ max_history_count: int = 10
 
 class History:
     def __init__(self):
-        self.abs_history_folder_path = config.get_abs_history_folder_path()
+        self.abs_history_folder_path = config.abs_history_folder_path
         self.abs_history_file_path = os.path.join(self.abs_history_folder_path, history_file_name)
 
 
