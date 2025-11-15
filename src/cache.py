@@ -31,17 +31,17 @@ class Cache:
 
     def get_oldest_cache_file_path(self) -> str:
         """
-        This function get the absolute file path of the oldest cache determined by the modification time.
+        This function gets the absolute file path of the oldest cache determined by the modification time.
         :return:
         """
-        data = []
+        cache_files = []
         for cache_file in os.listdir(self.abs_cache_folder_path):
             cache_file_path = os.path.join(self.abs_cache_folder_path, cache_file)
             modification_time = os.path.getmtime(cache_file_path)
-            data.append([cache_file_path, modification_time])
+            cache_files.append([cache_file_path, modification_time])
 
-        data.sort(key=lambda sublist: sublist[1])
-        return data[0][0]
+        cache_files.sort(key=lambda sublist: sublist[1])
+        return cache_files[0][0]
 
 
     def write_cache(self, city: str, data: Any):
