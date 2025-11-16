@@ -54,7 +54,8 @@ def main(args):
         if config_settings.show_air_quality:
             air_quality_index = api.get_air_quality(latitude, longitude)
             data["current"].update({"us_aqi": air_quality_index})
-        cache.write_cache(city_name, data)
+        if not config_settings.max_cache_file_count == 0:
+            cache.write_cache(city_name, data)
     history.add_history(city_name)
     parsed_weather = weather.parse_weather(city_name, data, config_settings)
     output.output(parsed_weather, config_settings)

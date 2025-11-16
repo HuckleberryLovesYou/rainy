@@ -1,6 +1,6 @@
 import os
 import json
-import time # TODO: Get rid of time dependency
+import time
 from typing import Any
 from models import ConfigSettings
 
@@ -34,14 +34,13 @@ class Cache:
         This function gets the absolute file path of the oldest cache determined by the modification time.
         :return:
         """
-        cache_files = []
+        cache_files: list[str] = []
         for cache_file in os.listdir(self.abs_cache_folder_path):
-            cache_file_path = os.path.join(self.abs_cache_folder_path, cache_file)
-            modification_time = os.path.getmtime(cache_file_path)
-            cache_files.append([cache_file_path, modification_time])
+            abs_cache_file_path = os.path.join(self.abs_cache_folder_path, cache_file)
+            if os.path.isfile(abs_cache_file_path):
+                cache_files.append(abs_cache_file_path)
 
-        cache_files.sort(key=lambda sublist: sublist[1])
-        return cache_files[0][0]
+        return min(cache_files, key=os.path.getmtime)
 
 
     def write_cache(self, city: str, data: Any):
