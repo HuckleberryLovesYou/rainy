@@ -53,7 +53,7 @@ def output(weather: Weather, config: ConfigSettings) -> None:
             try:
                 print(ascii_art[i], end="")
                 if config.use_emoji:
-                    print(formatters.get_emoji(key), end="")
+                    print(formatters.get_emoji(key) + " ", end="")
                 else:
                     print("○ ", end="")
 
@@ -63,7 +63,7 @@ def output(weather: Weather, config: ConfigSettings) -> None:
     else:
         for key, value in values.items():
             if config.use_emoji:
-                print(formatters.get_emoji(key), end="")
+                print(formatters.get_emoji(key) + " ", end="")
             else:
                 print("○ ", end="")
 
