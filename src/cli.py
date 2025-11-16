@@ -2,7 +2,7 @@ import argparse
 from models import CliOptions
 from exceptions import CliArgsError
 
-version = r"1.2.0"
+version = r"1.3.0"
 
 def parse_cli_args():
     parser = argparse.ArgumentParser(
