@@ -117,7 +117,7 @@ show_precipitation = True
 # Shows the current surface pressure in hPa. True or False
 show_surface_pressure = True
 
-# Show the U.S. AQI (Air Quality Index), Enabling this needs the program to execute 1 API Call more, True or False
+# Show the U.S. AQI (Air Quality Index), Enabling this needs the program to execute 1 API Call more resulting in a slow down, True or False
 show_air_quality = True
 
 
