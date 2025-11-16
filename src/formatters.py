@@ -15,7 +15,8 @@ _EMOJI_MAP: dict[str, str] = {
     "precipitation": "\U0001F327",
     "surface pressure": "\U0001F39A",
     "humidity": "\U0001F4A7",
-    "uv index": "\U00002600"
+    "uv index": "\U00002600",
+    "air quality index": "\U0001F4A8"
 }
 
 _DATE_FORMAT_MAP: dict[str, str] = {
