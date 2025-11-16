@@ -4,10 +4,10 @@ from exceptions import APIError
 
 class API:
     def __init__(self):
-        self.apis: dict = {"ipinfo": [r"https://ipinfo.io/json", "Fetching IP-Location-API..."],
-                           "geocoding": [r"https://geocoding-api.open-meteo.com/v1/search", "Fetching Geocoding-API..."],
-                           "forecast": [r"https://api.open-meteo.com/v1/forecast", "Fetching Weather-API..."],
-                           "air_quality": [r"https://air-quality-api.open-meteo.com/v1/air-quality", "Fetching Air Quality-API..."]
+        self.apis: dict[str, tuple] = {"ipinfo": (r"https://ipinfo.io/json", "Fetching IP-Location-API..."),
+                           "geocoding": (r"https://geocoding-api.open-meteo.com/v1/search", "Fetching Geocoding-API..."),
+                           "forecast": (r"https://api.open-meteo.com/v1/forecast", "Fetching Weather-API..."),
+                           "air_quality": (r"https://air-quality-api.open-meteo.com/v1/air-quality", "Fetching Air Quality-API...")
         }
         self._SPEED_UNIT_MAP: dict[str, str] = {
             "mph": "mph",
@@ -37,14 +37,14 @@ class API:
         :param params: Optinal - Allows to set parameters for the API Call
         :return: Returns the json-encoded response.
         """
-        api_info = self.apis.get(api)
-        if not api_info:
+        api_url, api_message = self.apis.get(api)
+        if not api_url:
             raise Exception(f"No Information found for api {api!r} in self.api_info.")
-        print(api_info[1] + (" " * 30), end="\r")
+        print(api_message + (" " * 30), end="\r")
         if not params:
             params = {}
 
-        response = requests.get(api_info[0], params=params)
+        response = requests.get(api_url, params=params)
         response.raise_for_status()
 
         return response.json()
