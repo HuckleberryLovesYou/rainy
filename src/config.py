@@ -2,6 +2,7 @@ import configparser
 import os
 import pickle
 from models import ConfigSettings, TemperatureUnit, SpeedUnit, PrecipitationUnit, TimeFormat, DateFormat
+from typing import Optional
 from exceptions import ConfigError
 
 cfg_folder_name: str = r".rainy"
@@ -19,13 +20,14 @@ class Config:
         self.abs_history_folder_path: str = os.path.join(self.abs_cfg_folder_path, history_folder_name)
         self.abs_cfg_file_path: str = os.path.join(self.abs_cfg_folder_path, cfg_file_name)
         self.abs_cfg_cache_path: str = os.path.join(self.abs_cfg_folder_path, cfg_cache_name)
-        self._config_settings: ConfigSettings = None
+        self._config_settings: Optional[ConfigSettings] = None
         if not os.path.exists(self.abs_cfg_folder_path):
             self.create_cfg_folder()
 
     def get_config(self) -> ConfigSettings:
         if self._config_settings is None:
             self._config_settings = self._load_config_cached()
+        assert self._config_settings is not None
         return self._config_settings
 
     def _load_config_cached(self) -> ConfigSettings:
@@ -48,7 +50,7 @@ class Config:
         config_settings = self._load_config()
         try:
             with open(self.abs_cfg_cache_path, 'wb') as f:
-                pickle.dump(config_settings, f, protocol=pickle.HIGHEST_PROTOCOL)
+                pickle.dump(config_settings, f, protocol=pickle.HIGHEST_PROTOCOL) # type: ignore[misc]
         except (OSError, pickle.PickleError):
             # If we can't write cache, continue without it
             pass
