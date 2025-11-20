@@ -27,8 +27,10 @@ _DATE_FORMAT_MAP: dict[str, str] = {
     "DD.MM.YYYY": "%d.%m.%Y"
 }
 
+
+_UTC_TIMEZONE = datetime.timezone.utc
 def get_local_date_time(utc_time_offset_seconds, sunrise, sunset, date_format, time_format) -> LocalDateTime:
-    time_at_location = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=utc_time_offset_seconds)
+    time_at_location = datetime.datetime.now(_UTC_TIMEZONE) + datetime.timedelta(seconds=utc_time_offset_seconds)
     date_format_str = _DATE_FORMAT_MAP.get(date_format)
     if date_format_str is None:
         raise FormatError(f"The date format configured {date_format!r} wasn't matched with any supported format.")
