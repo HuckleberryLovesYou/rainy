@@ -1,10 +1,12 @@
 import configparser
 import os
+import pickle
 from models import ConfigSettings, TemperatureUnit, SpeedUnit, PrecipitationUnit, TimeFormat, DateFormat
 from exceptions import ConfigError
 
 cfg_folder_name: str = r".rainy"
 cfg_file_name: str = r"config.ini"
+cfg_cache_name: str = r"config.cache"
 cache_folder_name: str = r"cache"
 history_folder_name: str = r"history"
 
@@ -16,14 +18,42 @@ class Config:
         self.abs_cache_folder_path: str = os.path.join(self.abs_cfg_folder_path, cache_folder_name)
         self.abs_history_folder_path: str = os.path.join(self.abs_cfg_folder_path, history_folder_name)
         self.abs_cfg_file_path: str = os.path.join(self.abs_cfg_folder_path, cfg_file_name)
+        self.abs_cfg_cache_path: str = os.path.join(self.abs_cfg_folder_path, cfg_cache_name)
         self._config_settings: ConfigSettings = None
         if not os.path.exists(self.abs_cfg_folder_path):
             self.create_cfg_folder()
 
     def get_config(self) -> ConfigSettings:
         if self._config_settings is None:
-            self._config_settings = self._load_config()
+            self._config_settings = self._load_config_cached()
         return self._config_settings
+
+    def _load_config_cached(self) -> ConfigSettings:
+        """Load config from pickle cache if valid, otherwise parse and cache."""
+        print("Looking for config cache...", end="\r")
+        # Check if pickle cache exists and is newer than config file
+        if os.path.exists(self.abs_cfg_cache_path) and os.path.exists(self.abs_cfg_file_path):
+            try:
+                cache_mtime = os.path.getmtime(self.abs_cfg_cache_path)
+                config_mtime = os.path.getmtime(self.abs_cfg_file_path)
+
+                if cache_mtime >= config_mtime:
+                    with open(self.abs_cfg_cache_path, 'rb') as f:
+                        return pickle.load(f)
+            except (OSError, pickle.PickleError):
+                # If cache is corrupted, fall through to re-parse
+                pass
+
+        # Parse config and cache it
+        config_settings = self._load_config()
+        try:
+            with open(self.abs_cfg_cache_path, 'wb') as f:
+                pickle.dump(config_settings, f, protocol=pickle.HIGHEST_PROTOCOL)
+        except (OSError, pickle.PickleError):
+            # If we can't write cache, continue without it
+            pass
+
+        return config_settings
 
     def reinit_cfg_folder(self):
         print("Reinitializing Configuration Folder")
