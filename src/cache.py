@@ -66,8 +66,9 @@ class Cache:
             if (time.time() - stat_info.st_mtime) > self.cache_ttl:
                 return None
 
+            # Use json.loads which is slightly faster than json.load
             with open(abs_cache_file_path, "r") as file:
-                return json.load(file)
+                return json.loads(file.read())
 
         except (OSError, json.JSONDecodeError):
             # File doesn't exist or is corrupted

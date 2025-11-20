@@ -17,7 +17,7 @@ class History:
     def add_history(self, city: str) -> None:
         if os.path.exists(self.abs_history_file_path):
             with open(self.abs_history_file_path, "r") as file:
-                history: list[str] = json.load(file)
+                history: list[str] = json.loads(file.read())
         else:
             history = []
 
@@ -29,13 +29,13 @@ class History:
             history.append(city)
 
         with open(self.abs_history_file_path, "w") as file:
-            json.dump(history, file)
+            file.write(json.dumps(history))
 
     def load_history(self) -> list[str]:
         if not os.path.exists(self.abs_history_file_path):
             raise Exception("History File not existing. The history is only available if you already used rainy.")
         with open(self.abs_history_file_path, "r") as file:
-            history = json.load(file)
+            history = json.loads(file.read())
             history.reverse()
             return history
 
