@@ -1,9 +1,13 @@
-import requests
 from exceptions import APIError
 
 
 class API:
     def __init__(self):
+        import requests
+        self._requests = requests
+
+        self._session = requests.Session()
+
         self.apis: dict[str, tuple] = {"ipinfo": (r"https://ipinfo.io/json", "Fetching IP-Location-API..."),
                            "geocoding": (r"https://geocoding-api.open-meteo.com/v1/search", "Fetching Geocoding-API..."),
                            "forecast": (r"https://api.open-meteo.com/v1/forecast", "Fetching Weather-API..."),
@@ -44,7 +48,8 @@ class API:
         if not params:
             params = {}
 
-        response = requests.get(api_url, params=params)
+        # Use session for connection pooling
+        response = self._session.get(api_url, params=params)
         response.raise_for_status()
 
         return response.json()
