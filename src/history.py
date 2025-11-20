@@ -1,16 +1,14 @@
 import os
 import json
 
-import config
-
-config = config.Config()
-
 history_file_name: str = r"history.txt"
 max_history_count: int = 10
 
 class History:
     def __init__(self):
-        self.abs_history_folder_path = config.abs_history_folder_path
+        import config
+        config_obj = config.Config()
+        self.abs_history_folder_path = config_obj.abs_history_folder_path
         self.abs_history_file_path = os.path.join(self.abs_history_folder_path, history_file_name)
 
 
