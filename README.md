@@ -55,11 +55,6 @@ Download the [latest executable](https://github.com/HuckleberryLovesYou/rainy/re
 Now, reopen any terminals you have currently opened, and type `rainy` in your terminal.
 To configure rainy, edit the Configuration at `$HOME\.rainy\config.ini`.
 
-## Configuration
-
-* You can edit the config at the **top** of `/usr/local/bin/rainy` (or .\rainy\src\rainy.py on windows) and set unit of measurements, date formats.
-* You can also set to show city name or/and the current date and time if you want to.
-
 ## Update
 
 What if there's an update?
