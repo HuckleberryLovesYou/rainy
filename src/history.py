@@ -1,23 +1,21 @@
 import os
 import json
 
-import config
-
-config = config.Config()
-
 history_file_name: str = r"history.txt"
 max_history_count: int = 10
 
 class History:
     def __init__(self):
-        self.abs_history_folder_path = config.abs_history_folder_path
+        import config
+        config_obj = config.Config()
+        self.abs_history_folder_path = config_obj.abs_history_folder_path
         self.abs_history_file_path = os.path.join(self.abs_history_folder_path, history_file_name)
 
 
     def add_history(self, city: str) -> None:
         if os.path.exists(self.abs_history_file_path):
             with open(self.abs_history_file_path, "r") as file:
-                history: list[str] = json.load(file)
+                history: list[str] = json.loads(file.read())
         else:
             history = []
 
@@ -29,13 +27,13 @@ class History:
             history.append(city)
 
         with open(self.abs_history_file_path, "w") as file:
-            json.dump(history, file)
+            file.write(json.dumps(history))
 
     def load_history(self) -> list[str]:
         if not os.path.exists(self.abs_history_file_path):
             raise Exception("History File not existing. The history is only available if you already used rainy.")
         with open(self.abs_history_file_path, "r") as file:
-            history = json.load(file)
+            history = json.loads(file.read())
             history.reverse()
             return history
 

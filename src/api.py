@@ -1,14 +1,18 @@
-import requests
 from exceptions import APIError
 
 
 class API:
     def __init__(self):
+        import requests
+        self._requests = requests
+
+        self._session = requests.Session()
+
         self.apis: dict[str, tuple] = {"ipinfo": (r"https://ipinfo.io/json", "Fetching IP-Location-API..."),
-                           "geocoding": (r"https://geocoding-api.open-meteo.com/v1/search", "Fetching Geocoding-API..."),
-                           "forecast": (r"https://api.open-meteo.com/v1/forecast", "Fetching Weather-API..."),
-                           "air_quality": (r"https://air-quality-api.open-meteo.com/v1/air-quality", "Fetching Air Quality-API...")
-        }
+                                       "geocoding": (r"https://geocoding-api.open-meteo.com/v1/search", "Fetching Geocoding-API..."),
+                                       "forecast": (r"https://api.open-meteo.com/v1/forecast", "Fetching Weather-API..."),
+                                       "air_quality": (r"https://air-quality-api.open-meteo.com/v1/air-quality", "Fetching Air Quality-API...")
+                                       }
         self._SPEED_UNIT_MAP: dict[str, str] = {
             "mph": "mph",
             "km/h": "kmh",
@@ -44,7 +48,8 @@ class API:
         if not params:
             params = {}
 
-        response = requests.get(api_url, params=params)
+        # Use session for connection pooling
+        response = self._session.get(api_url, params=params)
         response.raise_for_status()
 
         return response.json()
@@ -169,7 +174,6 @@ class API:
         if api_unit is None:
             raise APIError(f"The configured unit {unit!r} wasn't matched with any supported unit.")
         return api_unit
-
 
     def get_api_temperature_unit(self, unit: str) -> str:
         """

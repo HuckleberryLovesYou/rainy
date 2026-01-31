@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class CliOptions:
     """Strongly-typed container for command-line options.
 
@@ -43,7 +43,7 @@ class CliOptions:
     date_format_override: Optional[str]
     time_format_override: Optional[str]
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ConfigSettings:
     """Immutable snapshot of user configuration settings.
 
@@ -92,7 +92,7 @@ class ConfigSettings:
     max_cache_file_count: int
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Coordinates:
     """Geographic coordinates rounded to 2 decimal places as used by the API."""
 
@@ -100,7 +100,7 @@ class Coordinates:
     longitude: float
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class LocalDateTime:
     """Localized date/time information for the target location.
 
@@ -115,7 +115,7 @@ class LocalDateTime:
     local_sunset: str    # e.g., "14:23:01" or "02:23:01 PM" depending on settings
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Weather:
     """Unified weather model containing current and daily highlights.
 

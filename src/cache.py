@@ -52,26 +52,24 @@ class Cache:
 
 
     def load_cache(self, city: str) -> dict | None:
-        print("Looking for cache...", end="\r")
-        if self.is_cache_present(city) and self.is_cache_valid(city):
-            with open(self.get_abs_cache_file_path(city), "r") as file:
-                return json.load(file)
-        return None
-
-
-    def is_cache_present(self, city):
+        """Load cache if valid. Combines existence, size, and age checks in one go."""
         abs_cache_file_path = self.get_abs_cache_file_path(city)
-        if not os.path.exists(abs_cache_file_path):
-            print(f"Cache is empty.", end="\r")
-            return False
-        if os.path.getsize(abs_cache_file_path) <= 0:
-            print("Cache file is empty.", end="\r")
-            return False
-        return True
+        print("Looking for API cache...", end="\r")
+        try:
+            stat_info = os.stat(abs_cache_file_path)
 
+            # Check if file is empty
+            if stat_info.st_size <= 0:
+                return None
 
-    def is_cache_valid(self, city):
-        if (round(time.time()) - round(os.path.getmtime(self.get_abs_cache_file_path(city)))) <= self.cache_ttl:
-            return True
-        print("Cache has expired...", end="\r")
-        return False
+            # Check if cache has expired
+            if (time.time() - stat_info.st_mtime) > self.cache_ttl:
+                return None
+
+            # Use json.loads which is slightly faster than json.load
+            with open(abs_cache_file_path, "r") as file:
+                return json.loads(file.read())
+
+        except (OSError, json.JSONDecodeError):
+            # File doesn't exist or is corrupted
+            return None

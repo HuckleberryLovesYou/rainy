@@ -9,43 +9,49 @@ class WeatherService:
         :param config_settings: The Settings fetched from the Configuration
         :return: tuple: It contains the weather_code (a WMO Weather interpretation (WW) code that describes the current weather (1-99) (https://open-meteo.com/en/docs))
         """
-        air_quality_index = None
-        if config_settings.show_air_quality:
-            air_quality_index = int(data["current"]["us_aqi"])
 
-        temperature = float(data["current"]["temperature_2m"])
-        apparent_temperature = float(data["current"]["apparent_temperature"])
-        temperature_max = float(data["daily"]["temperature_2m_max"][0])
-        temperature_min = float(data["daily"]["temperature_2m_min"][0])
+        current = data["current"]
+        daily = data["daily"]
 
+        air_quality_index = current.get("us_aqi") if config_settings.show_air_quality else None
+
+        temperature = current["temperature_2m"]
+        apparent_temperature = current["apparent_temperature"]
+        temperature_max = daily["temperature_2m_max"][0]
+        temperature_min = daily["temperature_2m_min"][0]
+
+        # Only convert for Kelvin (avoid checking string repeatedly)
         if config_settings.temperature_unit == TemperatureUnit.KELVIN.value:
-            temperature += 273.2
-            apparent_temperature += 273.2
-            temperature_max += 273.2
-            temperature_min += 273.2
+            kelvin_offset = 273.2
+            temperature += kelvin_offset
+            apparent_temperature += kelvin_offset
+            temperature_max += kelvin_offset
+            temperature_min += kelvin_offset
 
+        sunrise_local = daily["sunrise"][0][-5:]
+        sunset_local = daily["sunset"][0][-5:]
 
         weather = Weather(
             city_name=city_name,
             coordinates=Coordinates(
-                latitude=round(float(data["latitude"]), 2),
-                longitude=round(float(data["longitude"]), 2),
+                latitude=data["latitude"],
+                longitude=data["longitude"],
             ),
-            utc_offset_seconds=int(data["utc_offset_seconds"]),
-            weather_code=int(data["current"]["weather_code"]),
-            sunrise_local="".join(data["daily"]["sunrise"])[-5:],
-            sunset_local="".join(data["daily"]["sunset"])[-5:],
+            utc_offset_seconds=data["utc_offset_seconds"],
+            weather_code=current["weather_code"],
+            sunrise_local=sunrise_local,
+            sunset_local=sunset_local,
             temperature=temperature,
             temperature_max=temperature_max,
             temperature_min=temperature_min,
             apparent_temperature=apparent_temperature,
-            uv_index=float(data["daily"]["uv_index_max"][0]),
-            wind_speed=float(data["current"]["wind_speed_10m"]),
-            wind_direction=int(data["current"]["wind_direction_10m"]),
-            is_day=bool(data["current"]["is_day"]),
-            humidity_percent=int(data["current"]["relative_humidity_2m"]),
-            precipitation=float(data["current"]["precipitation"]),
-            surface_pressure_hpa=float(data["current"]["surface_pressure"]),
+            uv_index=daily["uv_index_max"][0],
+            wind_speed=current["wind_speed_10m"],
+            wind_direction=current["wind_direction_10m"],
+            is_day=current["is_day"],
+            humidity_percent=current["relative_humidity_2m"],
+            precipitation=current["precipitation"],
+            surface_pressure_hpa=current["surface_pressure"],
             air_quality_index=air_quality_index
         )
 

@@ -42,29 +42,32 @@ def output(weather: Weather, config: ConfigSettings) -> None:
     if config.show_air_quality:
         values["Air Quality Index"] = formatters.get_air_quality_index_concern(weather.air_quality_index)
 
+    use_emoji = config.use_emoji
     if config.show_ascii_art:
         ascii_art = formatters.get_ascii_art(weather.weather_code, weather.is_day)
         len_diff = len(values) - len(ascii_art)
         if len_diff > 0:
-            for _ in range(len_diff):
-                ascii_art.append(" " * 17) # 17 is the amount of characters in one line in every ascii art
+
+            blank_line = " " * 17
+            ascii_art.extend([blank_line] * len_diff)
+
+        bullet = " " if use_emoji else "○ "
 
         for i, (key, value) in enumerate(values.items()):
             try:
-                print(ascii_art[i], end="")
-                if config.use_emoji:
-                    print(formatters.get_emoji(key) + " ", end="")
+                if use_emoji:
+                    output_line = ascii_art[i] + formatters.get_emoji(key) + " " + key + ": " + str(value)
                 else:
-                    print("○ ", end="")
-
-                print(key + ": " + str(value))
+                    output_line = ascii_art[i] + bullet + key + ": " + str(value)
+                print(output_line)
             except IndexError:
                 print(ascii_art[i])
     else:
-        for key, value in values.items():
-            if config.use_emoji:
-                print(formatters.get_emoji(key) + " ", end="")
-            else:
-                print("○ ", end="")
 
-            print(key + ": " + str(value))
+
+        for key, value in values.items():
+            if use_emoji:
+                output_line = formatters.get_emoji(key) + " " + key + ": " + str(value)
+            else:
+                output_line = "○ " + key + ": " + str(value)
+            print(output_line)
