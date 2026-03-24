@@ -1,6 +1,6 @@
 # Rainy 🌦️
 
-Neofetch-like, minimalistic, and customizable weather-fetching cli tool for your current location on Linux and Windows.
+A Fastfetch-like, minimalistic, and customizable weather-fetching cli tool for your current location on Linux and Windows.
 
 ## Showcase
 
